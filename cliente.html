@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NekoRuleta — Mis Puntos</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0d12;--surface:#15151e;--surface2:#1e1e2a;--border:#2a2a3d;--accent:#ff6eb4;--accent2:#ff9ed4;--text:#f0ede8;--muted:#7a7890;--danger:#ff5e7a}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden}
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+.orb1{width:500px;height:500px;top:-120px;left:-120px;background:radial-gradient(circle,rgba(255,110,180,.07) 0%,transparent 70%);animation:drift 12s ease-in-out infinite}
+.orb2{width:380px;height:380px;bottom:-80px;right:-80px;background:radial-gradient(circle,rgba(80,60,160,.06) 0%,transparent 70%);animation:drift 9s ease-in-out infinite reverse}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,20px)}}
+
+.login-wrap{position:relative;z-index:1;width:100%;max-width:380px;animation:up .5s ease}
+@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.login-logo{font-family:'Fredoka One',cursive;font-size:26px;font-weight:800;text-align:center;margin-bottom:6px}
+.login-logo span{color:var(--accent)}
+.login-sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:32px}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:36px 32px;box-shadow:0 40px 80px rgba(0,0,0,.5)}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.field input{width:100%;padding:13px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;font-family:'Nunito',sans-serif;outline:none;transition:border-color .2s}
+.field input:focus{border-color:var(--accent)}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#1a1400;font-weight:700;font-size:15px;font-family:'Fredoka One',cursive;cursor:pointer;transition:all .2s;margin-top:4px}
+.btn-login:hover{opacity:.9;transform:translateY(-1px)}
+.btn-login:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.login-error{color:var(--danger);font-size:13px;margin-top:12px;text-align:center;display:none}
+.login-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.6}
+
+.card{position:relative;z-index:1;width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:44px 36px;text-align:center;box-shadow:0 40px 80px rgba(0,0,0,.5);display:none;animation:up .6s ease}
+.brand{font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:28px;display:flex;align-items:center;justify-content:space-between}
+.brand-name span{color:var(--accent)}
+.btn-logout{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;padding:4px 10px;cursor:pointer;transition:all .18s;font-family:'DM Sans',sans-serif}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger)}
+.avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#c0306a);display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:28px;font-weight:800;color:#fff;margin:0 auto 16px;box-shadow:0 8px 28px rgba(255,110,180,.3)}
+.name{font-family:'Fredoka One',cursive;font-size:26px;font-weight:800;letter-spacing:-.4px;margin-bottom:4px}
+.cid{font-size:13px;color:var(--muted);margin-bottom:32px}
+.pts-box{background:var(--surface2);border:1px solid var(--border);border-radius:18px;padding:28px 20px;margin-bottom:20px;position:relative;overflow:hidden}
+.pts-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:sh 3s ease-in-out infinite}
+@keyframes sh{0%,100%{opacity:.3}50%{opacity:.9}}
+.pts-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:10px}
+.pts-num{font-family:'Fredoka One',cursive;font-size:66px;font-weight:800;color:var(--accent);line-height:1;letter-spacing:-2px}
+.pts-word{font-size:16px;color:var(--muted);margin-top:6px}
+.stars{display:flex;justify-content:center;gap:5px;margin:12px 0 0}
+.star{font-size:18px}
+.tier{display:inline-block;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;margin-top:12px}
+.t-bronze{background:rgba(176,100,50,.15);color:#cd7f32;border:1px solid rgba(176,100,50,.25)}
+.t-silver{background:rgba(160,160,160,.12);color:#c0c0c0;border:1px solid rgba(160,160,160,.25)}
+.t-gold{background:rgba(255,215,0,.12);color:#ffd700;border:1px solid rgba(255,215,0,.25)}
+.t-platinum{background:rgba(130,200,220,.12);color:#88d8e8;border:1px solid rgba(130,200,220,.25)}
+.prog-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin:14px 0 6px}
+.prog-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width 1.2s ease}
+.footer{font-size:11px;color:#3a3850;text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);line-height:1.6}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="login-wrap" id="loginWrap">
+  <div class="login-logo">Neko<span>Ruleta</span></div>
+  <div class="login-sub">Consulta tus puntos</div>
+  <div class="login-box">
+    <div class="field">
+      <label>Teléfono</label>
+      <input type="tel" id="loginPhone" placeholder="+57 300 111 2233" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Código de cliente</label>
+      <input type="text" id="loginId" placeholder="CL001" autocomplete="off">
+    </div>
+    <button class="btn-login" id="loginBtn" onclick="doLogin()">Ver mis puntos</button>
+    <div class="login-error" id="loginError">Teléfono o código incorrecto</div>
+    <div class="login-hint">Tu código de cliente te lo proporciona el negocio</div>
+  </div>
+</div>
+
+<div class="card" id="card">
+  <div class="brand">
+    <div class="brand-name">Neko<span>Ruleta</span> · mis puntos</div>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+  <div class="avatar" id="cardAvatar"></div>
+  <div class="name" id="cardName"></div>
+  <div class="cid" id="cardCid"></div>
+  <div class="pts-box">
+    <div class="pts-lbl">Puntos acumulados</div>
+    <div class="pts-num" id="cnt">0</div>
+    <div class="pts-word">puntos</div>
+    <div class="stars" id="cardStars"></div>
+    <div id="cardTier"></div>
+    <div id="cardProg"></div>
+  </div>
+  <div class="footer">Vista de solo lectura · Consulta con el negocio para más información</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCdXUX2_ydiPcj51ciV9YrSczAcs6m2F30",
+  authDomain: "loyalspin03.firebaseapp.com",
+  projectId: "loyalspin03",
+  storageBucket: "loyalspin03.firebasestorage.app",
+  messagingSenderId: "480148425420",
+  appId: "1:480148425420:web:f0f8c0e749fdc0da8e1069"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+function initials(n){ return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+function getTier(p){
+  if(p>=2000)return{name:'Platino',cls:'t-platinum',e:'💎'};
+  if(p>=1000)return{name:'Oro',cls:'t-gold',e:'🥇'};
+  if(p>=500)return{name:'Plata',cls:'t-silver',e:'🥈'};
+  return{name:'Bronce',cls:'t-bronze',e:'🥉'};
+}
+function getNext(p){
+  if(p<500)return{next:500,label:'Plata'};
+  if(p<1000)return{next:1000,label:'Oro'};
+  if(p<2000)return{next:2000,label:'Platino'};
+  return null;
+}
+function starsHTML(p){
+  const n=p>=2000?5:p>=1000?4:p>=500?3:p>=200?2:1;
+  return Array.from({length:5},(_,i)=>`<span class="star">${i<n?'⭐':'☆'}</span>`).join('');
+}
+function normalizePhone(p){ return p.replace(/[\s\-().+]/g,''); }
+
+window.doLogin = async function() {
+  const phone = document.getElementById('loginPhone').value.trim();
+  const id = document.getElementById('loginId').value.trim().toUpperCase();
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginError');
+
+  if (!phone||!id) { showError('Completa ambos campos'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Buscando…';
+  err.style.display = 'none';
+
+  try {
+    const snap = await getDocs(query(collection(db,'clients'), where('__name__','==',id)));
+    if (snap.empty) { showError('Teléfono o código incorrecto'); reset(); return; }
+
+    const c = snap.docs[0].data();
+    const storedPhone = normalizePhone(c.phone||'');
+    const inputPhone = normalizePhone(phone);
+
+    if (!storedPhone || storedPhone !== inputPhone) { showError('Teléfono o código incorrecto'); reset(); return; }
+
+    sessionStorage.setItem('ls_client', JSON.stringify({id, ...c}));
+    showCard({id, ...c});
+
+  } catch(e) {
+    showError('Error de conexión. Intenta de nuevo.');
+    reset();
+  }
+};
+
+function reset() {
+  document.getElementById('loginBtn').disabled = false;
+  document.getElementById('loginBtn').textContent = 'Ver mis puntos';
+}
+
+function showError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.style.display = 'block';
+  reset();
+}
+
+function showCard(c) {
+  document.getElementById('loginWrap').style.display = 'none';
+  const card = document.getElementById('card');
+  card.style.display = 'block';
+
+  const p = c.points||0;
+  const tier = getTier(p);
+  const next = getNext(p);
+  const prog = next ? Math.min((p/next.next)*100,100) : 100;
+
+  document.getElementById('cardAvatar').textContent = initials(c.name);
+  document.getElementById('cardName').textContent = c.name;
+  document.getElementById('cardCid').textContent = `ID: ${c.id}${c.phone?' · '+c.phone:''}`;
+  document.getElementById('cardStars').innerHTML = starsHTML(p);
+  document.getElementById('cardTier').innerHTML = `<span class="tier ${tier.cls}">${tier.e} Nivel ${tier.name}</span>`;
+  document.getElementById('cardProg').innerHTML = next
+    ? `<div class="prog-row"><span>${p.toLocaleString()} pts</span><span>${next.next.toLocaleString()} → ${next.label}</span></div><div class="prog-bar"><div class="prog-fill" id="pf"></div></div>`
+    : '<div style="margin-top:10px;font-size:12px;color:var(--accent)">🏆 Nivel máximo</div>';
+
+  const dur=1200, start=performance.now();
+  (function tick(now){
+    const t=Math.min((now-start)/dur,1), e=1-Math.pow(1-t,3);
+    document.getElementById('cnt').textContent=Math.floor(e*p).toLocaleString();
+    if(t<1)requestAnimationFrame(tick);
+    else document.getElementById('cnt').textContent=p.toLocaleString();
+  })(performance.now());
+  setTimeout(()=>{ const pf=document.getElementById('pf'); if(pf)pf.style.width=prog+'%'; },300);
+}
+
+window.doLogout = function() {
+  sessionStorage.removeItem('ls_client');
+  document.getElementById('card').style.display = 'none';
+  document.getElementById('loginWrap').style.display = 'block';
+  document.getElementById('loginPhone').value = '';
+  document.getElementById('loginId').value = '';
+  reset();
+};
+
+const saved = sessionStorage.getItem('ls_client');
+if (saved) { try { showCard(JSON.parse(saved)); } catch(e) { sessionStorage.removeItem('ls_client'); } }
+
+document.getElementById('loginId').addEventListener('keydown', e=>{ if(e.key==='Enter') window.doLogin(); });
+document.getElementById('loginPhone').addEventListener('keydown', e=>{ if(e.key==='Enter') window.doLogin(); });
+</script>
+</body>
+</html>

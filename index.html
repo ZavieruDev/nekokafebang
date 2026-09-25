@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neko Kafe Bang — Admin</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff6eb4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Neko Kafe">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d12;
+  --surface: #15151e;
+  --surface2: #1e1e2a;
+  --surface3: #252535;
+  --border: #2a2a3d;
+  --pink: #ff6eb4;
+  --pink2: #ff9ed4;
+  --pink-glow: rgba(255,110,180,.18);
+  --cyan: #5ee7ff;
+  --cyan-glow: rgba(94,231,255,.12);
+  --text: #f0eaf8;
+  --muted: #7a7a9a;
+  --success: #5cffa0;
+  --danger: #ff5e7a;
+  --warn: #ffd166;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* BG PATTERN */
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(255,110,180,.06) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(94,231,255,.05) 0%,transparent 50%);pointer-events:none;z-index:0}
+
+/* ══ LOGIN ══ */
+#loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:52px 44px;width:420px;text-align:center;box-shadow:0 0 60px rgba(255,110,180,.1),0 40px 80px rgba(0,0,0,.6);position:relative;overflow:hidden}
+.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--pink),var(--cyan),var(--pink))}
+.neko-logo{font-family:'Fredoka One',cursive;font-size:36px;color:var(--pink);text-shadow:0 0 30px var(--pink-glow);margin-bottom:4px}
+.neko-logo .cat{font-size:32px;vertical-align:middle}
+.login-sub{color:var(--muted);font-size:13px;margin-bottom:36px;font-weight:500}
+.login-field{margin-bottom:16px;text-align:left}
+.login-field label{display:block;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.login-field input{width:100%;padding:13px 18px;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-size:15px;font-family:'Nunito',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s}
+.login-field input:focus{border-color:var(--pink);box-shadow:0 0 0 3px var(--pink-glow)}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,var(--pink),#ff9ed4);border:none;border-radius:12px;color:#1a0a12;font-weight:800;font-size:16px;font-family:'Fredoka One',cursive;cursor:pointer;letter-spacing:.05em;transition:all .2s;margin-top:8px;box-shadow:0 8px 24px rgba(255,110,180,.35)}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(255,110,180,.45)}
+.login-err{color:var(--danger);font-size:13px;margin-top:12px;display:none}
+
+/* ══ LAYOUT ══ */
+#app{display:none;min-height:100vh;position:relative;z-index:1}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;padding:24px 0}
+.sidebar-logo{font-family:'Fredoka One',cursive;font-size:22px;color:var(--pink);padding:0 20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;text-shadow:0 0 20px var(--pink-glow)}
+.sidebar-logo .cat{font-size:24px}
+.sidebar-nav{padding:16px 10px;flex:1;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;color:var(--muted);transition:all .18s;margin-bottom:3px;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(255,110,180,.12);color:var(--pink);border:1px solid rgba(255,110,180,.2)}
+.nav-item .icon{font-size:18px;width:24px;text-align:center}
+.nav-badge{margin-left:auto;background:var(--pink);color:#1a0a12;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;min-width:18px;text-align:center;display:none}
+.nav-badge.show{display:block}
+.sidebar-footer{padding:16px 10px;border-top:1px solid var(--border)}
+.btn-logout{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .18s;border:none;background:none;width:100%}
+.btn-logout:hover{color:var(--danger);background:rgba(255,94,122,.08)}
+
+.main{margin-left:220px;padding:36px;min-height:100vh}
+.page{display:none}
+.page.active{display:block}
+.page-header{margin-bottom:32px}
+.page-header h1{font-family:'Fredoka One',cursive;font-size:30px;color:var(--text);letter-spacing:.02em}
+.page-header p{color:var(--muted);font-size:14px;margin-top:4px;font-weight:500}
+
+/* ══ CARDS & COMMON ══ */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px}
+.btn{padding:10px 20px;border-radius:10px;border:none;font-weight:700;font-size:13px;font-family:'Nunito',sans-serif;cursor:pointer;transition:all .18s}
+.btn-pink{background:linear-gradient(135deg,var(--pink),var(--pink2));color:#1a0a12;box-shadow:0 4px 16px rgba(255,110,180,.3)}
+.btn-pink:hover{opacity:.9;transform:translateY(-1px)}
+.btn-cyan{background:linear-gradient(135deg,var(--cyan),#a0f0ff);color:#051a20}
+.btn-cyan:hover{opacity:.9;transform:translateY(-1px)}
+.btn-ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--pink)}
+.btn-danger{background:rgba(255,94,122,.12);color:var(--danger);border:1px solid rgba(255,94,122,.2)}
+.btn-danger:hover{background:rgba(255,94,122,.2)}
+.btn-sm{padding:7px 14px;font-size:12px;border-radius:8px}
+
+/* ══ STATS ══ */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--pink),var(--cyan))}
+.stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;font-weight:700}
+.stat-val{font-family:'Fredoka One',cursive;font-size:32px;color:var(--pink)}
+
+/* ══ PC MAP ══ */
+.map-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.map-container{background:var(--surface);border:2px solid var(--border);border-radius:20px;position:relative;overflow:hidden;height:500px;cursor:default;user-select:none}
+.map-container::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,110,180,.06) 1px,transparent 1px);background-size:32px 32px;pointer-events:none}
+.map-walls{position:absolute;inset:20px;border:2px dashed rgba(255,110,180,.15);border-radius:12px;pointer-events:none}
+.map-label{position:absolute;top:28px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(255,110,180,.3);font-weight:700;letter-spacing:.15em;text-transform:uppercase;pointer-events:none}
+
+.pc-node{position:absolute;width:90px;cursor:grab;transition:box-shadow .2s;z-index:10}
+.pc-node:active{cursor:grabbing}
+.pc-node.dragging{z-index:100;opacity:.9}
+.pc-body{background:var(--surface2);border:2px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center;transition:border-color .2s,box-shadow .2s;position:relative}
+.pc-body::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;background:var(--muted)}
+.pc-node.status-free .pc-body{border-color:rgba(92,255,160,.3);box-shadow:0 0 20px rgba(92,255,160,.1)}
+.pc-node.status-free .pc-body::before{background:var(--success)}
+.pc-node.status-busy .pc-body{border-color:rgba(255,110,180,.4);box-shadow:0 0 20px rgba(255,110,180,.15)}
+.pc-node.status-busy .pc-body::before{background:var(--pink)}
+.pc-node.status-ending .pc-body{border-color:rgba(255,209,102,.4);box-shadow:0 0 20px rgba(255,209,102,.15)}
+.pc-node.status-ending .pc-body::before{background:var(--warn)}
+.pc-node.status-blocked .pc-body{border-color:rgba(255,94,122,.4);box-shadow:0 0 20px rgba(255,94,122,.1)}
+.pc-node.status-blocked .pc-body::before{background:var(--danger)}
+.pc-icon{font-size:26px;margin-bottom:4px}
+.pc-name{font-size:11px;font-weight:800;color:var(--text);letter-spacing:.05em}
+.pc-client{font-size:10px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px}
+.pc-timer{font-family:'Fredoka One',cursive;font-size:16px;margin-top:4px;color:var(--cyan)}
+.pc-node.status-ending .pc-timer{color:var(--warn);animation:pulse 1s ease-in-out infinite}
+.pc-node.status-blocked .pc-timer{color:var(--danger)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.pc-actions{display:flex;gap:4px;margin-top:6px;justify-content:center}
+.pc-btn{font-size:10px;padding:3px 7px;border-radius:6px;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;transition:all .15s}
+.pc-btn.start{background:rgba(92,255,160,.15);color:var(--success)}
+.pc-btn.start:hover{background:rgba(92,255,160,.25)}
+.pc-btn.stop{background:rgba(255,94,122,.15);color:var(--danger)}
+.pc-btn.stop:hover{background:rgba(255,94,122,.25)}
+.pc-btn.add-time{background:rgba(94,231,255,.15);color:var(--cyan)}
+.pc-btn.add-time:hover{background:rgba(94,231,255,.25)}
+
+/* ══ MODAL ══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(6px)}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:36px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;transform:translateY(16px);transition:transform .25s;position:relative}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;background:linear-gradient(90deg,var(--pink),var(--cyan))}
+.modal-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:var(--surface2);border:none;color:var(--muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.modal-close:hover{background:var(--danger);color:#fff}
+.modal h2{font-family:'Fredoka One',cursive;font-size:22px;color:var(--pink);margin-bottom:20px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:'Nunito',sans-serif;outline:none;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--pink)}
+.form-group select option{background:var(--surface2)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* ══ LOYALSPIN ══ */
+.client-card-row{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:10px;cursor:pointer;transition:all .18s}
+.client-card-row:hover{border-color:var(--pink);transform:translateY(-1px)}
+.client-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--pink),#c0306a);display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:16px;color:#fff;flex-shrink:0}
+.client-info{flex:1}
+.client-name-row{font-weight:800;font-size:15px}
+.client-id-row{color:var(--muted);font-size:12px;margin-top:2px}
+.client-pts-row{font-family:'Fredoka One',cursive;font-size:24px;color:var(--pink)}
+.client-pts-row span{font-family:'Nunito',sans-serif;font-size:11px;color:var(--muted);font-weight:600;display:block;text-align:right}
+
+/* ══ MENU ══ */
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.menu-item-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all .18s}
+.menu-item-card:hover{border-color:var(--pink);transform:translateY(-2px)}
+.menu-img{width:100%;height:140px;object-fit:cover;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:48px}
+.menu-img img{width:100%;height:100%;object-fit:cover}
+.menu-info{padding:14px}
+.menu-item-name{font-weight:800;font-size:15px;margin-bottom:4px}
+.menu-item-cat{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+.menu-item-price{font-family:'Fredoka One',cursive;font-size:20px;color:var(--cyan);margin-top:6px}
+.menu-item-actions{display:flex;gap:8px;margin-top:10px}
+
+/* ══ CHAT ══ */
+.chat-layout{display:grid;grid-template-columns:240px 1fr;gap:16px;height:calc(100vh - 200px)}
+.chat-list{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow-y:auto}
+.chat-list-header{padding:16px;border-bottom:1px solid var(--border);font-weight:800;font-size:14px}
+.chat-pc-item{padding:14px 16px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.chat-pc-item:hover{background:var(--surface2)}
+.chat-pc-item.active{background:rgba(255,110,180,.08);border-right:2px solid var(--pink)}
+.chat-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.chat-dot.online{background:var(--success)}
+.chat-dot.unread{background:var(--pink);animation:pulse 1s infinite}
+.chat-pc-name{font-weight:700;font-size:13px}
+.chat-pc-preview{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.chat-window{background:var(--surface);border:1px solid var(--border);border-radius:16px;display:flex;flex-direction:column}
+.chat-header{padding:16px 20px;border-bottom:1px solid var(--border);font-weight:800;display:flex;align-items:center;gap:10px}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{max-width:70%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.5}
+.chat-msg.admin{background:linear-gradient(135deg,rgba(255,110,180,.2),rgba(255,110,180,.1));border:1px solid rgba(255,110,180,.2);align-self:flex-end;border-radius:14px 14px 4px 14px}
+.chat-msg.client{background:var(--surface2);border:1px solid var(--border);align-self:flex-start;border-radius:14px 14px 14px 4px}
+.chat-msg .msg-time{font-size:10px;color:var(--muted);margin-top:4px}
+.chat-msg.request{background:rgba(255,209,102,.08);border:1px solid rgba(255,209,102,.2);align-self:flex-start;border-radius:14px}
+.chat-input-row{padding:16px;border-top:1px solid var(--border);display:flex;gap:10px}
+.chat-input-row input{flex:1;padding:11px 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.chat-input-row input:focus{border-color:var(--pink)}
+.chat-empty{display:flex;align-items:center;justify-content:center;flex:1;color:var(--muted);font-size:14px;flex-direction:column;gap:8px}
+
+/* ══ HISTORY ══ */
+.history-table{width:100%;border-collapse:collapse}
+.history-table th{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);font-weight:700}
+.history-table td{padding:12px 14px;border-bottom:1px solid rgba(42,42,61,.5);font-size:13px}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-pts{background:rgba(255,110,180,.12);color:var(--pink)}
+.badge-redeem{background:rgba(255,94,122,.1);color:var(--danger)}
+
+/* ══ SEARCH ══ */
+.search-bar{margin-bottom:20px}
+.search-bar input{width:100%;padding:12px 18px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;font-family:'Nunito',sans-serif;outline:none;transition:border-color .2s}
+.search-bar input:focus{border-color:var(--pink)}
+
+/* ══ TOAST ══ */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:12px 20px;font-size:14px;font-weight:700;z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.success{border-color:var(--success);color:var(--success)}
+#toast.error{border-color:var(--danger);color:var(--danger)}
+#toast.info{border-color:var(--cyan);color:var(--cyan)}
+
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty-state .ei{font-size:40px;margin-bottom:12px}
+.divider{height:1px;background:var(--border);margin:20px 0}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="neko-logo"><span class="cat">🐱</span> Neko Kafe Bang</div>
+    <div class="login-sub">Panel de administración</div>
+    <div class="login-field"><label>Usuario</label><input type="text" id="loginUser" placeholder="admin" autocomplete="off"></div>
+    <div class="login-field"><label>Contraseña</label><input type="password" id="loginPass" placeholder="••••••••"></div>
+    <button class="btn-login" onclick="doLogin()">🐾 Ingresar</button>
+    <div class="login-err" id="loginErr">Credenciales incorrectas</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="cat">🐱</span> Neko Kafe</div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" onclick="showPage('pcs')" id="nav-pcs"><span class="icon">🖥️</span> PCs <span class="nav-badge" id="badge-pcs"></span></button>
+      <button class="nav-item" onclick="showPage('loyalspin')" id="nav-loyalspin"><span class="icon">🎰</span> LoyalSpin</button>
+      <button class="nav-item" onclick="showPage('ganancias')" id="nav-ganancias"><span class="icon">💰</span> Ganancias</button>
+      <button class="nav-item" onclick="showPage('menu')" id="nav-menu"><span class="icon">🍜</span> Menú</button>
+      <button class="nav-item" onclick="showPage('chat')" id="nav-chat"><span class="icon">💬</span> Chat <span class="nav-badge" id="badge-chat"></span></button>
+      <button class="nav-item" onclick="showPage('history')" id="nav-history"><span class="icon">📋</span> Historial</button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()">🚪 Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- PCS PAGE -->
+    <section class="page active" id="page-pcs">
+      <div class="page-header">
+        <h1>🖥️ Mapa del local</h1>
+        <p>Arrastra las PCs para acomodarlas. Haz clic en una PC para iniciar sesión.</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">PCs totales</div><div class="stat-val" id="statTotal">0</div></div>
+        <div class="stat-card"><div class="stat-label">En uso</div><div class="stat-val" id="statBusy">0</div></div>
+        <div class="stat-card"><div class="stat-label">Disponibles</div><div class="stat-val" id="statFree">0</div></div>
+        <div class="stat-card"><div class="stat-label">Ingresos hoy</div><div class="stat-val" id="statRevenue">$0</div></div>
+      </div>
+      <div class="map-toolbar">
+        <button class="btn btn-pink" onclick="openAddPC()">➕ Agregar PC</button>
+        <button class="btn btn-ghost" onclick="savePositions()">💾 Guardar posiciones</button>
+        <span style="color:var(--muted);font-size:12px;margin-left:8px">💡 Arrastra para reposicionar</span>
+      </div>
+      <div class="map-container" id="mapContainer">
+        <div class="map-walls"></div>
+        <div class="map-label">NEKO KAFE BANG</div>
+        <div id="pcNodes"></div>
+      </div>
+    </section>
+
+    <!-- LOYALSPIN PAGE -->
+    <section class="page" id="page-loyalspin">
+      <div class="page-header"><h1>🎰 LoyalSpin</h1><p>Gestión de clientes y puntos</p></div>
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card"><div class="stat-label">Clientes</div><div class="stat-val" id="lsStatClients">—</div></div>
+        <div class="stat-card"><div class="stat-label">Puntos entregados</div><div class="stat-val" id="lsStatPoints">—</div></div>
+        <div class="stat-card"><div class="stat-label">Giros totales</div><div class="stat-val" id="lsStatSpins">—</div></div>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+        <button class="btn btn-pink" onclick="showLSTab('clients')">👥 Clientes</button>
+        <button class="btn btn-ghost" onclick="showLSTab('add')">➕ Nuevo cliente</button>
+      </div>
+      <div id="lsClientsView">
+        <div class="search-bar"><input type="text" id="lsSearch" placeholder="Buscar cliente..." oninput="filterLSClients()"></div>
+        <div id="lsClientsList"><div class="loading">Cargando...</div></div>
+      </div>
+      <div id="lsAddView" style="display:none">
+        <div class="card" style="max-width:500px">
+          <h2 style="font-family:'Fredoka One',cursive;color:var(--pink);margin-bottom:20px">Nuevo cliente</h2>
+          <div class="form-row">
+            <div class="form-group"><label>ID único</label><input type="text" id="fId" placeholder="CL001"></div>
+            <div class="form-group"><label>Nombre</label><input type="text" id="fName" placeholder="María García"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Teléfono</label><input type="text" id="fPhone" placeholder="+57 300 000 0000"></div>
+            <div class="form-group"><label>Puntos iniciales</label><input type="number" id="fPoints" value="0" min="0"></div>
+          </div>
+          <button class="btn btn-pink" onclick="addLSClient()">Registrar cliente</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- GANANCIAS PAGE -->
+    <section class="page" id="page-ganancias">
+      <div class="page-header">
+        <h1>💰 Ganancias</h1>
+        <p>Estimado de ganancias del día — horas de internet + productos vendidos</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px">
+        <input type="date" id="gananciasDate" style="padding:10px 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif">
+        <button class="btn btn-pink" onclick="loadGanancias()">🔄 Actualizar</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">🖥️ Internet (PCs)</div><div class="stat-val" id="gInternet" style="font-size:26px">$0</div></div>
+        <div class="stat-card"><div class="stat-label">🍜 Productos</div><div class="stat-val" id="gProductos" style="font-size:26px">$0</div></div>
+        <div class="stat-card"><div class="stat-label">🎰 Giros regalados</div><div class="stat-val" id="gGiros" style="font-size:26px">0</div></div>
+        <div class="stat-card" style="border-color:rgba(255,110,180,.4)"><div class="stat-label">💰 Ganancia estimada</div><div class="stat-val" id="gTotal" style="font-size:26px">$0</div></div>
+      </div>
+      <div class="card" style="margin-bottom:20px">
+        <h2 style="font-family:'Fredoka One',cursive;color:var(--pink);font-size:18px;margin-bottom:14px">🖥️ Sesiones de PC del día</h2>
+        <div id="gSessionsList"><div class="loading">Cargando...</div></div>
+      </div>
+      <div class="card">
+        <h2 style="font-family:'Fredoka One',cursive;color:var(--pink);font-size:18px;margin-bottom:14px">🍜 Ventas de productos del día</h2>
+        <div id="gSalesList"><div class="loading">Cargando...</div></div>
+      </div>
+    </section>
+
+    <!-- MENU PAGE -->
+    <section class="page" id="page-menu">
+      <div class="page-header"><h1>🍜 Menú</h1><p>Administra los productos del café</p></div>
+      <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap">
+        <button class="btn btn-pink" onclick="openAddMenuItem()">➕ Agregar producto</button>
+        <button class="btn btn-cyan" onclick="openRegisterSale()">🧾 Registrar venta</button>
+      </div>
+      <div class="menu-grid" id="menuGrid"><div class="loading">Cargando menú...</div></div>
+    </section>
+
+    <!-- CHAT PAGE -->
+    <section class="page" id="page-chat">
+      <div class="page-header"><h1>💬 Chat</h1><p>Mensajes de las PCs en tiempo real</p></div>
+      <div class="chat-layout">
+        <div class="chat-list">
+          <div class="chat-list-header">PCs conectadas</div>
+          <div id="chatPCList"></div>
+        </div>
+        <div class="chat-window" id="chatWindow">
+          <div class="chat-empty"><span style="font-size:40px">💬</span><span>Selecciona una PC para ver el chat</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY PAGE -->
+    <section class="page" id="page-history">
+      <div class="page-header"><h1>📋 Historial</h1><p>Sesiones y movimientos</p></div>
+      <div id="historyContainer"><div class="loading">Cargando...</div></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODAL: Iniciar sesión PC -->
+<div class="modal-overlay" id="modalStartPC">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalStartPC')">✕</button>
+    <h2 id="modalStartTitle">Iniciar sesión</h2>
+    <div class="form-group"><label>Teléfono del cliente</label><input type="tel" id="startPhone" placeholder="+57 300 111 2233"></div>
+    <div class="form-group"><label>Nombre (si es nuevo)</label><input type="text" id="startName" placeholder="María García"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Tiempo (minutos)</label><input type="number" id="startTime" value="60" min="15" step="15"></div>
+      <div class="form-group"><label>Tarifa ($/hora)</label><input type="number" id="startRate" value="3000" min="500" step="500"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-pink" onclick="startPCSession()">🚀 Iniciar sesión</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalStartPC')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Agregar PC -->
+<div class="modal-overlay" id="modalAddPC">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalAddPC')">✕</button>
+    <h2>Agregar PC</h2>
+    <div class="form-group"><label>Nombre de la PC</label><input type="text" id="newPCName" placeholder="PC 3"></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-pink" onclick="addPC()">➕ Agregar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalAddPC')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Agregar tiempo -->
+<div class="modal-overlay" id="modalAddTime">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalAddTime')">✕</button>
+    <h2 id="modalAddTimeTitle">Agregar tiempo</h2>
+    <div class="form-group"><label>Minutos adicionales</label><input type="number" id="addTimeMinutes" value="30" min="15" step="15"></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-cyan" onclick="confirmAddTime()">⏱ Agregar tiempo</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalAddTime')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Cliente LoyalSpin -->
+<div class="modal-overlay" id="modalLSClient">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalLSClient')">✕</button>
+    <div id="modalLSContent"><div class="loading">Cargando...</div></div>
+  </div>
+</div>
+
+<!-- MODAL: Registrar venta -->
+<div class="modal-overlay" id="modalSale">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalSale')">✕</button>
+    <h2>🧾 Registrar venta</h2>
+    <div class="form-row">
+      <div class="form-group" style="flex:2.2"><label>Producto</label><select id="saleProduct"></select></div>
+      <div class="form-group" style="flex:1"><label>Cant.</label><input type="number" id="saleQty" value="1" min="1"></div>
+    </div>
+    <button class="btn btn-ghost btn-sm" style="width:100%;margin-bottom:16px" onclick="addSaleItem()">➕ Agregar al pedido</button>
+
+    <div id="saleCartList" style="margin-bottom:6px"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 4px;border-top:1.5px solid var(--border);margin-bottom:16px">
+      <span style="font-weight:800;font-size:14px">Total del pedido</span>
+      <span id="saleCartTotal" style="font-family:'Fredoka One',cursive;color:var(--pink);font-size:22px">$0</span>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group"><label>PC (opcional)</label>
+        <select id="salePC"><option value="">— Ninguna —</option></select>
+      </div>
+      <div class="form-group"><label>Cliente (opcional)</label>
+        <select id="saleClient"><option value="">— Ninguno —</option></select>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-cyan" onclick="confirmSale()">🧾 Registrar venta</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalSale')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Agregar producto menú -->
+<div class="modal-overlay" id="modalMenuItem">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalMenuItem')">✕</button>
+    <h2 id="menuModalTitle">Nuevo producto</h2>
+    <div class="form-row">
+      <div class="form-group"><label>Nombre</label><input type="text" id="menuItemName" placeholder="Ramen 🍜"></div>
+      <div class="form-group"><label>Categoría</label>
+        <select id="menuItemCat">
+          <option value="comida">🍜 Comida</option>
+          <option value="bebida">🧋 Bebida</option>
+          <option value="snack">🍿 Snack</option>
+          <option value="postre">🍡 Postre</option>
+          <option value="otro">✨ Otro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Precio ($)</label><input type="number" id="menuItemPrice" placeholder="5000" min="0"></div>
+      <div class="form-group"><label>Emoji / Ícono</label><input type="text" id="menuItemEmoji" placeholder="🍜" maxlength="4"></div>
+    </div>
+    <div class="form-group"><label>Descripción (opcional)</label><input type="text" id="menuItemDesc" placeholder="Delicioso ramen con topping de neko"></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-pink" onclick="saveMenuItem()">💾 Guardar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalMenuItem')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc,
+  deleteDoc, query, orderBy, limit, where, increment, serverTimestamp,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCdXUX2_ydiPcj51ciV9YrSczAcs6m2F30",
+  authDomain: "loyalspin03.firebaseapp.com",
+  projectId: "loyalspin03",
+  storageBucket: "loyalspin03.firebasestorage.app",
+  messagingSenderId: "480148425420",
+  appId: "1:480148425420:web:f0f8c0e749fdc0da8e1069"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'nekokafe2024';
+const PTS_PER_HOUR = 10;
+const BASE_PC_URL = 'https://zavierudev.github.io/nekokafebang/pc.html';
+
+/* ══ STATE ══ */
+let pcs = {};
+let pcTimers = {};
+let allLSClients = [];
+let selectedChatPC = null;
+let chatUnsub = null;
+let pcUnsub = null;
+let editingMenuItemId = null;
+let currentStartPCId = null;
+let currentAddTimePCId = null;
+let allMenuItems = [];
+
+/* ══ AUTH ══ */
+window.doLogin = function() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    sessionStorage.setItem('nkb_auth','1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initApp();
+  } else {
+    const el = document.getElementById('loginErr');
+    el.style.display = 'block';
+    setTimeout(()=>el.style.display='none', 2500);
+  }
+};
+document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') window.doLogin(); });
+document.getElementById('loginUser').addEventListener('keydown', e=>{ if(e.key==='Enter') window.doLogin(); });
+window.logout = ()=>{ sessionStorage.removeItem('nkb_auth'); location.reload(); };
+if (sessionStorage.getItem('nkb_auth')==='1') {
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+  setTimeout(initApp, 0);
+}
+
+/* ══ NAV ══ */
+window.showPage = function(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  if (name==='loyalspin') initLoyalSpin();
+  if (name==='ganancias') loadGanancias();
+  if (name==='menu') loadMenu();
+  if (name==='chat') initChat();
+  if (name==='history') loadHistory();
+};
+
+/* ══ INIT ══ */
+function initApp() {
+  listenPCs();
+  loadLSClientsCache();
+}
+
+/* ══ PC MAP ══ */
+function listenPCs() {
+  if (pcUnsub) pcUnsub();
+  pcUnsub = onSnapshot(collection(db,'pcs'), snap => {
+    pcs = {};
+    snap.docs.forEach(d => { pcs[d.id] = {id:d.id,...d.data()}; });
+    renderPCMap();
+    updatePCStats();
+  });
+}
+
+function renderPCMap() {
+  const container = document.getElementById('pcNodes');
+  // Save existing positions from DOM before re-render
+  Object.keys(pcs).forEach(pcId => {
+    const node = document.getElementById('pcnode-'+pcId);
+    if (node) {
+      pcs[pcId]._domX = parseInt(node.style.left);
+      pcs[pcId]._domY = parseInt(node.style.top);
+    }
+  });
+
+  container.innerHTML = '';
+  Object.values(pcs).forEach(pc => {
+    const node = document.createElement('div');
+    node.className = 'pc-node';
+    node.id = 'pcnode-'+pc.id;
+
+    const x = pc.posX ?? 60;
+    const y = pc.posY ?? 60;
+    node.style.left = x+'px';
+    node.style.top = y+'px';
+
+    const status = getPCStatus(pc);
+    node.classList.add('status-'+status);
+
+    const timeLeft = getPCTimeLeft(pc);
+    const timeStr = status==='free' ? 'Libre' : status==='blocked' ? 'Bloqueada' : formatTime(timeLeft);
+
+    node.innerHTML = `
+      <div class="pc-body" onclick="handlePCClick('${pc.id}')">
+        <div class="pc-icon">🖥️</div>
+        <div class="pc-name">${pc.name}</div>
+        <div class="pc-client">${pc.clientName||''}</div>
+        <div class="pc-timer">${timeStr}</div>
+        <div class="pc-actions" onclick="event.stopPropagation()">
+          ${status==='free'
+            ? `<button class="pc-btn start" onclick="openStartSession('${pc.id}')">▶ Iniciar</button>`
+            : status==='blocked'
+            ? `<button class="pc-btn start" onclick="openStartSession('${pc.id}')">🔓 Nueva</button>`
+            : `
+              <button class="pc-btn add-time" onclick="openAddTime('${pc.id}')">+⏱</button>
+              <button class="pc-btn stop" onclick="endPCSession('${pc.id}')">■</button>
+            `
+          }
+        </div>
+      </div>
+    `;
+    makeDraggable(node, pc.id);
+    container.appendChild(node);
+  });
+
+  // Start/update timers
+  clearAllTimers();
+  Object.values(pcs).forEach(pc => {
+    if (pc.sessionActive && pc.endTime) {
+      pcTimers[pc.id] = setInterval(() => tickPCTimer(pc.id), 1000);
+    }
+  });
+}
+
+function tickPCTimer(pcId) {
+  const pc = pcs[pcId];
+  if (!pc) return;
+  const node = document.getElementById('pcnode-'+pcId);
+  if (!node) return;
+  const timeLeft = getPCTimeLeft(pc);
+  const status = getPCStatus(pc);
+
+  node.className = 'pc-node status-'+status;
+  const timerEl = node.querySelector('.pc-timer');
+  if (timerEl) timerEl.textContent = timeLeft <= 0 ? 'Tiempo agotado' : formatTime(timeLeft);
+
+  if (timeLeft <= 0 && pc.sessionActive) {
+    // Auto-end session
+    clearInterval(pcTimers[pcId]);
+    autoCloseSession(pcId, pc);
+    toast(`⏰ Tiempo agotado en ${pc.name}`,'info');
+  }
+}
+
+async function autoCloseSession(pcId, pc) {
+  const minsUsed = pc.durationMinutes || 0;
+  const ptsEarned = Math.floor(minsUsed/60)*PTS_PER_HOUR;
+  const revenue = Math.round((pc.rate||0) * minsUsed/60);
+  if (pc.clientId && ptsEarned > 0) {
+    await updateDoc(doc(db,'clients',pc.clientId), { points: increment(ptsEarned) });
+    await addDoc(collection(db,'history'), { clientId:pc.clientId, clientName:pc.clientName, pts:ptsEarned, type:'pc_session', ts:serverTimestamp() });
+  }
+  const sessQuery = await getDocs(query(collection(db,'sessions'), where('pcId','==',pcId), where('status','==','active')));
+  await Promise.all(sessQuery.docs.map(d => updateDoc(doc(db,'sessions',d.id), { status:'ended', endTime:serverTimestamp(), actualMinutes:minsUsed, revenue })));
+  await updateDoc(doc(db,'pcs',pcId), { sessionActive: false, blocked: true });
+}
+
+function clearAllTimers() {
+  Object.values(pcTimers).forEach(t=>clearInterval(t));
+  pcTimers = {};
+}
+
+function getPCStatus(pc) {
+  if (!pc.sessionActive && !pc.blocked) return 'free';
+  if (pc.blocked && !pc.sessionActive) return 'blocked';
+  const left = getPCTimeLeft(pc);
+  if (left <= 300 && left > 0) return 'ending'; // 5 min warning
+  if (left <= 0) return 'blocked';
+  return 'busy';
+}
+
+function getPCTimeLeft(pc) {
+  if (!pc.endTime) return 0;
+  const end = pc.endTime.toDate ? pc.endTime.toDate().getTime() : pc.endTime;
+  return Math.floor((end - Date.now()) / 1000);
+}
+
+function formatTime(secs) {
+  if (secs <= 0) return '00:00';
+  const h = Math.floor(secs/3600);
+  const m = Math.floor((secs%3600)/60);
+  const s = secs%60;
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function updatePCStats() {
+  const pcList = Object.values(pcs);
+  const busy = pcList.filter(p=>p.sessionActive).length;
+  document.getElementById('statTotal').textContent = pcList.length;
+  document.getElementById('statBusy').textContent = busy;
+  document.getElementById('statFree').textContent = pcList.length - busy;
+  const badge = document.getElementById('badge-pcs');
+  if (busy > 0) { badge.textContent = busy; badge.classList.add('show'); }
+  else badge.classList.remove('show');
+}
+
+/* ══ DRAGGABLE ══ */
+function makeDraggable(el, pcId) {
+  let isDragging=false, startX, startY, startLeft, startTop, moved=false;
+
+  el.addEventListener('mousedown', e => {
+    if (e.target.tagName==='BUTTON') return;
+    isDragging = true;
+    moved = false;
+    startX = e.clientX;
+    startY = e.clientY;
+    startLeft = parseInt(el.style.left)||0;
+    startTop = parseInt(el.style.top)||0;
+    el.classList.add('dragging');
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    if (Math.abs(dx)>3||Math.abs(dy)>3) moved=true;
+    const map = document.getElementById('mapContainer');
+    const rect = map.getBoundingClientRect();
+    const newX = Math.max(10, Math.min(startLeft+dx, rect.width-110));
+    const newY = Math.max(10, Math.min(startTop+dy, rect.height-120));
+    el.style.left = newX+'px';
+    el.style.top = newY+'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      el.classList.remove('dragging');
+    }
+  });
+}
+
+window.savePositions = async function() {
+  const promises = Object.keys(pcs).map(pcId => {
+    const node = document.getElementById('pcnode-'+pcId);
+    if (!node) return;
+    return updateDoc(doc(db,'pcs',pcId), {
+      posX: parseInt(node.style.left)||60,
+      posY: parseInt(node.style.top)||60
+    });
+  });
+  await Promise.all(promises);
+  toast('✅ Posiciones guardadas','success');
+};
+
+/* ══ ADD PC ══ */
+window.openAddPC = ()=>openModal('modalAddPC');
+window.addPC = async function() {
+  const name = document.getElementById('newPCName').value.trim();
+  if (!name) { toast('Ingresa un nombre','error'); return; }
+  const id = 'pc_'+Date.now();
+  const count = Object.keys(pcs).length;
+  await setDoc(doc(db,'pcs',id), {
+    name, sessionActive:false, blocked:false,
+    posX: 60 + (count%4)*120, posY: 60 + Math.floor(count/4)*150,
+    createdAt: serverTimestamp()
+  });
+  document.getElementById('newPCName').value='';
+  closeModal('modalAddPC');
+  toast(`✅ ${name} agregada`,'success');
+};
+
+/* ══ START SESSION ══ */
+window.handlePCClick = function(pcId) {
+  const pc = pcs[pcId];
+  if (!pc) return;
+  if (pc.sessionActive) return; // already in use, buttons handle actions
+  openStartSession(pcId);
+};
+
+window.openStartSession = function(pcId) {
+  currentStartPCId = pcId;
+  const pc = pcs[pcId];
+  document.getElementById('modalStartTitle').textContent = `Iniciar sesión — ${pc.name}`;
+  document.getElementById('startPhone').value='';
+  document.getElementById('startName').value='';
+  document.getElementById('startTime').value='60';
+  openModal('modalStartPC');
+};
+
+window.startPCSession = async function() {
+  const phone = document.getElementById('startPhone').value.trim();
+  const name = document.getElementById('startName').value.trim();
+  const minutes = parseInt(document.getElementById('startTime').value)||60;
+  const rate = parseInt(document.getElementById('startRate').value)||3000;
+  const pcId = currentStartPCId;
+
+  if (!phone) { toast('Ingresa el teléfono del cliente','error'); return; }
+
+  // Find or create client
+  let clientId = null, clientName = name;
+  const snap = await getDocs(query(collection(db,'clients'), where('phone','==',phone)));
+
+  if (!snap.empty) {
+    const c = snap.docs[0];
+    clientId = c.id;
+    clientName = c.data().name;
+  } else {
+    if (!name) { toast('Cliente nuevo — ingresa el nombre','error'); return; }
+    clientId = 'CL'+Date.now();
+    await setDoc(doc(db,'clients',clientId), {
+      id:clientId, name, phone, points:0, createdAt:serverTimestamp()
+    });
+    toast(`✅ Cliente ${name} creado`,'success');
+  }
+
+  const endTime = new Date(Date.now() + minutes*60*1000);
+  await updateDoc(doc(db,'pcs',pcId), {
+    sessionActive: true,
+    blocked: false,
+    clientId,
+    clientName,
+    clientPhone: phone,
+    startTime: serverTimestamp(),
+    endTime,
+    durationMinutes: minutes,
+    rate,
+  });
+
+  await addDoc(collection(db,'sessions'), {
+    pcId, pcName: pcs[pcId].name,
+    clientId, clientName,
+    startTime: serverTimestamp(),
+    durationMinutes: minutes,
+    rate,
+    status: 'active'
+  });
+
+  closeModal('modalStartPC');
+  toast(`🚀 Sesión iniciada en ${pcs[pcId].name} para ${clientName}`,'success');
+};
+
+/* ══ ADD TIME ══ */
+window.openAddTime = function(pcId) {
+  currentAddTimePCId = pcId;
+  document.getElementById('modalAddTimeTitle').textContent = `Agregar tiempo — ${pcs[pcId].name}`;
+  document.getElementById('addTimeMinutes').value='30';
+  openModal('modalAddTime');
+};
+
+window.confirmAddTime = async function() {
+  const minutes = parseInt(document.getElementById('addTimeMinutes').value)||30;
+  const pcId = currentAddTimePCId;
+  const pc = pcs[pcId];
+  const currentEnd = pc.endTime?.toDate ? pc.endTime.toDate() : new Date(pc.endTime);
+  const newEnd = new Date(currentEnd.getTime() + minutes*60*1000);
+  await updateDoc(doc(db,'pcs',pcId), { endTime: newEnd });
+  closeModal('modalAddTime');
+  toast(`⏱ +${minutes} min agregados a ${pc.name}`,'success');
+};
+
+/* ══ END SESSION ══ */
+window.endPCSession = async function(pcId) {
+  const pc = pcs[pcId];
+  if (!confirm(`¿Terminar sesión de ${pc.clientName} en ${pc.name}?`)) return;
+
+  // Give points
+  const minsUsed = Math.ceil((Date.now() - (pc.startTime?.toDate?.()||Date.now())) / 60000);
+  const ptsEarned = Math.floor(minsUsed/60)*PTS_PER_HOUR;
+  const revenue = Math.round((pc.rate||0) * minsUsed/60);
+
+  if (pc.clientId && ptsEarned > 0) {
+    await updateDoc(doc(db,'clients',pc.clientId), { points: increment(ptsEarned) });
+    await addDoc(collection(db,'history'), {
+      clientId:pc.clientId, clientName:pc.clientName,
+      pts:ptsEarned, type:'pc_session', ts:serverTimestamp()
+    });
+    toast(`🐾 +${ptsEarned} puntos a ${pc.clientName}`,'info');
+  }
+
+  // Cerrar el registro de la sesión con su ingreso real (para Ganancias)
+  const sessQuery = await getDocs(query(collection(db,'sessions'), where('pcId','==',pcId), where('status','==','active')));
+  await Promise.all(sessQuery.docs.map(d => updateDoc(doc(db,'sessions',d.id), {
+    status:'ended', endTime:serverTimestamp(), actualMinutes:minsUsed, revenue
+  })));
+
+  await updateDoc(doc(db,'pcs',pcId), {
+    sessionActive:false, blocked:false,
+    clientId:null, clientName:null, clientPhone:null,
+    endTime:null, startTime:null
+  });
+  toast(`✅ Sesión terminada en ${pc.name} — $${revenue.toLocaleString()}`,'success');
+};
+
+/* ══ LOYALSPIN ══ */
+async function loadLSClientsCache() {
+  const snap = await getDocs(collection(db,'clients'));
+  allLSClients = snap.docs.map(d=>({id:d.id,...d.data()}));
+}
+
+async function initLoyalSpin() {
+  await loadLSClientsCache();
+  const totalPts = allLSClients.reduce((s,c)=>s+(c.points||0),0);
+  const spinsSnap = await getDocs(collection(db,'tokens'));
+  const totalSpins = spinsSnap.docs.reduce((s,d)=>s+(d.data().spinsUsed||0),0);
+  document.getElementById('lsStatClients').textContent = allLSClients.length;
+  document.getElementById('lsStatPoints').textContent = totalPts.toLocaleString();
+  document.getElementById('lsStatSpins').textContent = totalSpins;
+  filterLSClients();
+}
+
+window.showLSTab = function(tab) {
+  document.getElementById('lsClientsView').style.display = tab==='clients'?'block':'none';
+  document.getElementById('lsAddView').style.display = tab==='add'?'block':'none';
+};
+
+window.filterLSClients = function() {
+  const q = document.getElementById('lsSearch').value.trim().toLowerCase();
+  const filtered = allLSClients.filter(c=>!q||c.id.toLowerCase().includes(q)||c.name.toLowerCase().includes(q));
+  const container = document.getElementById('lsClientsList');
+  if (!filtered.length) { container.innerHTML='<div class="empty-state"><div class="ei">👥</div><p>Sin resultados</p></div>'; return; }
+  container.innerHTML = filtered.map(c=>`
+    <div class="client-card-row" onclick="openLSClient('${c.id}')">
+      <div class="client-avatar">${initials(c.name)}</div>
+      <div class="client-info">
+        <div class="client-name-row">${c.name}</div>
+        <div class="client-id-row">${c.id}${c.phone?' · '+c.phone:''}</div>
+      </div>
+      <div class="client-pts-row">${(c.points||0).toLocaleString()}<span>puntos</span></div>
+    </div>
+  `).join('');
+};
+
+window.addLSClient = async function() {
+  const id = document.getElementById('fId').value.trim().toUpperCase();
+  const name = document.getElementById('fName').value.trim();
+  const phone = document.getElementById('fPhone').value.trim();
+  const pts = parseInt(document.getElementById('fPoints').value)||0;
+  if (!id||!name) { toast('Completa los campos requeridos','error'); return; }
+  const existing = await getDoc(doc(db,'clients',id));
+  if (existing.exists()) { toast('El ID ya existe','error'); return; }
+  await setDoc(doc(db,'clients',id), { id,name,phone,points:pts,createdAt:serverTimestamp() });
+  if (pts>0) await addDoc(collection(db,'history'),{clientId:id,clientName:name,pts,type:'manual',ts:serverTimestamp()});
+  toast(`✅ ${name} registrado`,'success');
+  ['fId','fName','fPhone'].forEach(f=>document.getElementById(f).value='');
+  document.getElementById('fPoints').value='0';
+  await loadLSClientsCache();
+  filterLSClients();
+};
+
+window.openLSClient = async function(clientId) {
+  document.getElementById('modalLSContent').innerHTML='<div class="loading">Cargando...</div>';
+  openModal('modalLSClient');
+  const snap = await getDoc(doc(db,'clients',clientId));
+  if (!snap.exists()) return;
+  const c = {id:snap.id,...snap.data()};
+  document.getElementById('modalLSContent').innerHTML=`
+    <h2>${c.name}</h2>
+    <div style="display:flex;gap:20px;margin-bottom:20px;flex-wrap:wrap">
+      <div><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px">ID</div><div style="font-weight:800">${c.id}</div></div>
+      ${c.phone?`<div><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px">TELÉFONO</div><div style="font-weight:800">${c.phone}</div></div>`:''}
+      <div><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px">PUNTOS</div><div style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--pink)" id="lsModalPts">${(c.points||0).toLocaleString()}</div></div>
+    </div>
+    <div class="divider"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <div style="background:rgba(92,255,160,.05);border:1px solid rgba(92,255,160,.15);border-radius:12px;padding:14px">
+        <div style="font-size:11px;color:var(--success);font-weight:700;margin-bottom:8px">➕ AGREGAR PUNTOS</div>
+        <input type="number" id="lsAddPts" placeholder="150" style="width:100%;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Nunito',sans-serif;outline:none;margin-bottom:8px">
+        <button class="btn btn-sm" style="background:rgba(92,255,160,.12);color:var(--success);border:1px solid rgba(92,255,160,.2)" onclick="lsAddPoints('${c.id}')">Agregar</button>
+      </div>
+      <div style="background:rgba(255,94,122,.05);border:1px solid rgba(255,94,122,.15);border-radius:12px;padding:14px">
+        <div style="font-size:11px;color:var(--danger);font-weight:700;margin-bottom:8px">🎁 CANJEAR PUNTOS</div>
+        <input type="number" id="lsRedeemPts" placeholder="200" style="width:100%;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Nunito',sans-serif;outline:none;margin-bottom:8px">
+        <button class="btn btn-sm btn-danger" onclick="lsRedeemPoints('${c.id}','${c.points||0}')">Canjear</button>
+      </div>
+    </div>
+    <div style="background:rgba(255,110,180,.05);border:1px solid rgba(255,110,180,.15);border-radius:12px;padding:14px;margin-bottom:14px">
+      <div style="font-size:11px;color:var(--pink);font-weight:700;margin-bottom:8px">🎰 GENERAR QR DE GIRO</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="number" id="spinCount" value="1" min="1" max="10" style="width:80px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Nunito',sans-serif;outline:none">
+        <span style="font-size:12px;color:var(--muted)">giro(s) exactos en este QR</span>
+      </div>
+      <button class="btn btn-pink btn-sm" style="margin-top:10px" onclick="generateSpinQR('${c.id}')">🎰 Generar QR</button>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-danger btn-sm" onclick="lsDeleteClient('${c.id}')">🗑 Eliminar</button>
+    </div>
+  `;
+};
+
+window.lsAddPoints = async function(clientId) {
+  const pts = parseInt(document.getElementById('lsAddPts').value);
+  if (!pts||pts<1) { toast('Ingresa una cantidad válida','error'); return; }
+  await updateDoc(doc(db,'clients',clientId), { points:increment(pts) });
+  const snap = await getDoc(doc(db,'clients',clientId));
+  const c = snap.data();
+  await addDoc(collection(db,'history'),{clientId,clientName:c.name,pts,type:'manual',ts:serverTimestamp()});
+  document.getElementById('lsModalPts').textContent=(c.points||0).toLocaleString();
+  document.getElementById('lsAddPts').value='';
+  toast(`+${pts} puntos agregados`,'success');
+  await loadLSClientsCache();
+};
+
+window.lsRedeemPoints = async function(clientId, currentPts) {
+  const pts = parseInt(document.getElementById('lsRedeemPts').value);
+  if (!pts||pts<1) { toast('Ingresa una cantidad válida','error'); return; }
+  if (pts > parseInt(currentPts)) { toast(`No tiene suficientes puntos`,'error'); return; }
+  await updateDoc(doc(db,'clients',clientId), { points:increment(-pts) });
+  const snap = await getDoc(doc(db,'clients',clientId));
+  const c = snap.data();
+  await addDoc(collection(db,'history'),{clientId,clientName:c.name,pts:-pts,type:'redeem',ts:serverTimestamp()});
+  document.getElementById('lsModalPts').textContent=(c.points||0).toLocaleString();
+  document.getElementById('lsRedeemPts').value='';
+  toast(`🎁 Canjeados ${pts} puntos`,'success');
+  await loadLSClientsCache();
+};
+
+window.lsDeleteClient = async function(clientId) {
+  if (!confirm('¿Eliminar este cliente?')) return;
+  await deleteDoc(doc(db,'clients',clientId));
+  closeModal('modalLSClient');
+  await loadLSClientsCache();
+  filterLSClients();
+  toast('Cliente eliminado','error');
+};
+
+window.generateSpinQR = async function(clientId) {
+  const cSnap = await getDoc(doc(db,'clients',clientId));
+  if (!cSnap.exists()) return;
+  const c = {id:cSnap.id,...cSnap.data()};
+  const spinsTotal = Math.max(1, Math.min(10, parseInt(document.getElementById('spinCount')?.value)||1));
+  const tokenRef = await addDoc(collection(db,'tokens'),{
+    clientId, used:false, cancelled:false,
+    spinsTotal, spinsUsed:0,
+    createdAt:serverTimestamp()
+  });
+  const payload = btoa(JSON.stringify({t:tokenRef.id,id:c.id,name:c.name,pts:c.points||0,n:spinsTotal}));
+  const url = `https://zavierudev.github.io/loyalspin/girar.html?d=${payload}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}&bgcolor=15151e&color=ff6eb4&margin=10`;
+  document.getElementById('modalLSContent').innerHTML=`
+    <h2>QR de giro — ${c.name}</h2>
+    <div style="text-align:center;margin:20px 0">
+      <img src="${qrUrl}" style="border-radius:12px;width:200px;height:200px" onerror="this.style.display='none'">
+      <div style="font-family:'Fredoka One',cursive;color:var(--pink);font-size:16px;margin-top:10px">${spinsTotal} giro${spinsTotal>1?'s':''} exacto${spinsTotal>1?'s':''}</div>
+      <div style="font-size:11px;color:var(--muted);word-break:break-all;margin-top:12px;padding:8px;background:var(--surface2);border-radius:8px;font-family:monospace">${url}</div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="openLSClient('${clientId}')">← Volver</button>
+  `;
+};
+
+/* ══ MENU ══ */
+async function loadMenu() {
+  const snap = await getDocs(query(collection(db,'menu'), orderBy('createdAt','desc')));
+  const items = snap.docs.map(d=>({id:d.id,...d.data()}));
+  allMenuItems = items;
+  const grid = document.getElementById('menuGrid');
+  if (!items.length) { grid.innerHTML='<div class="empty-state"><div class="ei">🍜</div><p>Sin productos. Agrega el primero.</p></div>'; return; }
+  grid.innerHTML = items.map(item=>`
+    <div class="menu-item-card">
+      <div class="menu-img">${item.emoji||'🍜'}</div>
+      <div class="menu-info">
+        <div class="menu-item-name">${item.name}</div>
+        <div class="menu-item-cat">${catLabel(item.category)}</div>
+        ${item.description?`<div style="font-size:12px;color:var(--muted);margin-top:4px">${item.description}</div>`:''}
+        <div class="menu-item-price">$${(item.price||0).toLocaleString()}</div>
+        <div class="menu-item-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openEditMenuItem('${item.id}')">✏️ Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteMenuItem('${item.id}')">🗑</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function catLabel(cat) {
+  const map={comida:'🍜 Comida',bebida:'🧋 Bebida',snack:'🍿 Snack',postre:'🍡 Postre',otro:'✨ Otro'};
+  return map[cat]||cat;
+}
+
+window.openAddMenuItem = function() {
+  editingMenuItemId = null;
+  document.getElementById('menuModalTitle').textContent='Nuevo producto';
+  ['menuItemName','menuItemPrice','menuItemEmoji','menuItemDesc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('menuItemCat').value='comida';
+  openModal('modalMenuItem');
+};
+
+window.openEditMenuItem = async function(id) {
+  const snap = await getDoc(doc(db,'menu',id));
+  if (!snap.exists()) return;
+  const item = snap.data();
+  editingMenuItemId = id;
+  document.getElementById('menuModalTitle').textContent='Editar producto';
+  document.getElementById('menuItemName').value=item.name||'';
+  document.getElementById('menuItemPrice').value=item.price||'';
+  document.getElementById('menuItemEmoji').value=item.emoji||'';
+  document.getElementById('menuItemDesc').value=item.description||'';
+  document.getElementById('menuItemCat').value=item.category||'comida';
+  openModal('modalMenuItem');
+};
+
+window.saveMenuItem = async function() {
+  const name = document.getElementById('menuItemName').value.trim();
+  const price = parseInt(document.getElementById('menuItemPrice').value)||0;
+  const emoji = document.getElementById('menuItemEmoji').value.trim()||'🍜';
+  const description = document.getElementById('menuItemDesc').value.trim();
+  const category = document.getElementById('menuItemCat').value;
+  if (!name) { toast('Ingresa el nombre del producto','error'); return; }
+  const data = {name,price,emoji,description,category};
+  if (editingMenuItemId) {
+    await updateDoc(doc(db,'menu',editingMenuItemId), data);
+    toast('✅ Producto actualizado','success');
+  } else {
+    await addDoc(collection(db,'menu'), {...data, createdAt:serverTimestamp()});
+    toast('✅ Producto agregado','success');
+  }
+  closeModal('modalMenuItem');
+  loadMenu();
+};
+
+window.deleteMenuItem = async function(id) {
+  if (!confirm('¿Eliminar este producto?')) return;
+  await deleteDoc(doc(db,'menu',id));
+  toast('Producto eliminado','error');
+  loadMenu();
+};
+
+/* ══ VENTAS (pedido con varios productos en una sola cuenta) ══ */
+let saleCart = [];
+
+window.openRegisterSale = async function() {
+  if (!allMenuItems.length) await loadMenu();
+  const prodSel = document.getElementById('saleProduct');
+  if (!allMenuItems.length) {
+    prodSel.innerHTML = '<option value="">Sin productos — agrega uno primero</option>';
+  } else {
+    prodSel.innerHTML = allMenuItems.map(i=>`<option value="${i.id}" data-price="${i.price||0}" data-name="${i.name}" data-emoji="${i.emoji||'🍜'}">${i.emoji||'🍜'} ${i.name} — $${(i.price||0).toLocaleString()}</option>`).join('');
+  }
+  const pcSel = document.getElementById('salePC');
+  pcSel.innerHTML = '<option value="">— Ninguna —</option>' + Object.values(pcs).map(pc=>`<option value="${pc.id}">${pc.name}${pc.clientName?' — '+pc.clientName:''}</option>`).join('');
+  if (!allLSClients.length) await loadLSClientsCache();
+  const clientSel = document.getElementById('saleClient');
+  clientSel.innerHTML = '<option value="">— Ninguno —</option>' + allLSClients.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('saleQty').value = '1';
+  saleCart = [];
+  renderSaleCart();
+  openModal('modalSale');
+};
+
+window.addSaleItem = function() {
+  const sel = document.getElementById('saleProduct');
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt || !opt.value) { toast('Selecciona un producto','error'); return; }
+  const itemId = opt.value;
+  const name = opt.dataset.name;
+  const emoji = opt.dataset.emoji;
+  const price = parseInt(opt.dataset.price)||0;
+  const qty = Math.max(1, parseInt(document.getElementById('saleQty').value)||1);
+
+  const existing = saleCart.find(i=>i.itemId===itemId);
+  if (existing) { existing.qty += qty; }
+  else { saleCart.push({itemId, name, emoji, price, qty}); }
+
+  document.getElementById('saleQty').value = '1';
+  renderSaleCart();
+};
+
+window.removeSaleItem = function(idx) {
+  saleCart.splice(idx,1);
+  renderSaleCart();
+};
+
+function renderSaleCart() {
+  const list = document.getElementById('saleCartList');
+  if (!saleCart.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:14px 0">Agrega productos al pedido...</div>';
+  } else {
+    list.innerHTML = saleCart.map((i,idx)=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 4px;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px">${i.emoji} ${i.name} <span style="color:var(--muted)">x${i.qty}</span></span>
+        <span style="display:flex;align-items:center;gap:10px">
+          <span style="font-weight:700;font-size:13px">$${(i.price*i.qty).toLocaleString()}</span>
+          <button onclick="removeSaleItem(${idx})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:14px">✕</button>
+        </span>
+      </div>`).join('');
+  }
+  const total = saleCart.reduce((s,i)=>s+i.price*i.qty,0);
+  document.getElementById('saleCartTotal').textContent = '$'+total.toLocaleString();
+}
+
+window.confirmSale = async function() {
+  if (!saleCart.length) { toast('Agrega al menos un producto al pedido','error'); return; }
+  const total = saleCart.reduce((s,i)=>s+i.price*i.qty,0);
+  const pcId = document.getElementById('salePC').value || null;
+  const pcName = pcId ? (pcs[pcId]?.name||null) : null;
+  const clientId = document.getElementById('saleClient').value || null;
+  const clientName = clientId ? (allLSClients.find(c=>c.id===clientId)?.name||null) : null;
+  const itemsSummary = saleCart.map(i=>`${i.name} x${i.qty}`).join(', ');
+
+  await addDoc(collection(db,'sales'), {
+    items: saleCart.map(i=>({itemId:i.itemId, itemName:i.name, price:i.price, qty:i.qty, subtotal:i.price*i.qty})),
+    itemsSummary, total, pcId, pcName, clientId, clientName, ts: serverTimestamp()
+  });
+  await addDoc(collection(db,'history'), {
+    clientId, clientName: clientName||pcName||'Venta mostrador', pts:0, total, type:'sale', note:itemsSummary, ts: serverTimestamp()
+  });
+  closeModal('modalSale');
+  toast(`✅ Venta registrada: ${itemsSummary} — $${total.toLocaleString()}`,'success');
+};
+
+/* ══ GANANCIAS ══ */
+function dayRange(dateStr) {
+  const d = dateStr ? new Date(dateStr+'T00:00:00') : new Date();
+  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0,0,0,0);
+  const end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23,59,59,999);
+  return {start, end};
+}
+
+async function loadGanancias() {
+  const dateInput = document.getElementById('gananciasDate');
+  if (!dateInput.value) {
+    const now = new Date();
+    dateInput.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  }
+  const {start, end} = dayRange(dateInput.value);
+
+  // Sesiones de PC (ingresos por internet)
+  const sessSnap = await getDocs(collection(db,'sessions'));
+  const sessions = sessSnap.docs.map(d=>({id:d.id,...d.data()})).filter(s=>{
+    const t = s.startTime?.toDate?.();
+    return t && t>=start && t<=end;
+  });
+  let internetTotal = 0;
+  const sessRows = sessions.map(s=>{
+    const revenue = s.revenue ?? (s.status==='active' ? Math.round((s.rate||0) * (s.durationMinutes||0)/60) : 0);
+    internetTotal += (s.revenue ?? revenue) || 0;
+    return `<tr>
+      <td>${s.pcName||'—'}</td><td>${s.clientName||'—'}</td>
+      <td>${s.durationMinutes||0} min</td>
+      <td>${s.status==='ended'?'✅ Terminada':'🟢 Activa'}</td>
+      <td style="text-align:right">$${(s.revenue??revenue).toLocaleString()}</td>
+    </tr>`;
+  });
+  document.getElementById('gSessionsList').innerHTML = sessions.length
+    ? `<table class="history-table"><thead><tr><th>PC</th><th>Cliente</th><th>Duración</th><th>Estado</th><th style="text-align:right">Ingreso</th></tr></thead><tbody>${sessRows.join('')}</tbody></table>`
+    : '<div class="empty-state"><div class="ei">🖥️</div><p>Sin sesiones ese día</p></div>';
+
+  // Ventas de productos
+  const salesSnap = await getDocs(collection(db,'sales'));
+  const sales = salesSnap.docs.map(d=>({id:d.id,...d.data()})).filter(s=>{
+    const t = s.ts?.toDate?.();
+    return t && t>=start && t<=end;
+  });
+  let productTotal = 0;
+  const saleRows = sales.map(s=>{
+    productTotal += s.total||0;
+    return `<tr><td>${s.itemsSummary||s.itemName||'—'}</td><td>${s.clientName||s.pcName||'Mostrador'}</td><td style="text-align:right">$${(s.total||0).toLocaleString()}</td></tr>`;
+  });
+  document.getElementById('gSalesList').innerHTML = sales.length
+    ? `<table class="history-table"><thead><tr><th>Pedido</th><th>Cliente/PC</th><th style="text-align:right">Total</th></tr></thead><tbody>${saleRows.join('')}</tbody></table>`
+    : '<div class="empty-state"><div class="ei">🍜</div><p>Sin ventas ese día</p></div>';
+
+  // Giros regalados (costo, no ingreso — informativo)
+  const tokensSnap = await getDocs(collection(db,'tokens'));
+  const spinsToday = tokensSnap.docs.map(d=>d.data()).filter(t=>{
+    const c = t.createdAt?.toDate?.();
+    return c && c>=start && c<=end;
+  }).reduce((sum,t)=>sum+(t.spinsUsed||0),0);
+
+  document.getElementById('gInternet').textContent = '$'+internetTotal.toLocaleString();
+  document.getElementById('gProductos').textContent = '$'+productTotal.toLocaleString();
+  document.getElementById('gGiros').textContent = spinsToday;
+  document.getElementById('gTotal').textContent = '$'+(internetTotal+productTotal).toLocaleString();
+}
+window.loadGanancias = loadGanancias;
+
+/* ══ CHAT ══ */
+function initChat() {
+  // List PCs
+  const pcList = document.getElementById('chatPCList');
+  const pcItems = Object.values(pcs);
+  if (!pcItems.length) { pcList.innerHTML='<div style="padding:20px;color:var(--muted);font-size:13px">Sin PCs registradas</div>'; return; }
+  pcList.innerHTML = pcItems.map(pc=>`
+    <div class="chat-pc-item" id="chatitem-${pc.id}" onclick="selectChatPC('${pc.id}')">
+      <div class="chat-dot ${pc.sessionActive?'online':''}"></div>
+      <div>
+        <div class="chat-pc-name">${pc.name}</div>
+        <div class="chat-pc-preview">${pc.clientName||'Sin sesión'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.selectChatPC = function(pcId) {
+  selectedChatPC = pcId;
+  document.querySelectorAll('.chat-pc-item').forEach(el=>el.classList.remove('active'));
+  const item = document.getElementById('chatitem-'+pcId);
+  if (item) item.classList.add('active');
+
+  const pc = pcs[pcId];
+  const win = document.getElementById('chatWindow');
+  win.innerHTML = `
+    <div class="chat-header">
+      <div class="chat-dot ${pc?.sessionActive?'online':''}"></div>
+      <span>${pc?.name||pcId}</span>
+      <span style="color:var(--muted);font-size:12px;margin-left:auto">${pc?.clientName||'Sin sesión'}</span>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendChatMsg()">
+      <button class="btn btn-pink btn-sm" onclick="sendChatMsg()">Enviar</button>
+    </div>
+  `;
+
+  if (chatUnsub) chatUnsub();
+  chatUnsub = onSnapshot(
+    query(collection(db,'messages'), where('pcId','==',pcId), orderBy('ts','asc'), limit(50)),
+    snap => {
+      const container = document.getElementById('chatMessages');
+      if (!container) return;
+      container.innerHTML = snap.docs.map(d=>{
+        const m = d.data();
+        const isAdmin = m.sender==='admin';
+        const isRequest = m.type==='time_request';
+        return `<div class="chat-msg ${isRequest?'request':isAdmin?'admin':'client'}">
+          ${isRequest?`⏱ <strong>Solicitud de tiempo:</strong> ${m.text}`:`<strong>${isAdmin?'Admin':m.senderName||pc?.clientName||'Cliente'}:</strong> ${m.text}`}
+          <div class="msg-time">${m.ts?.toDate?.()?.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})||''}</div>
+          ${isRequest?`<button class="btn btn-cyan btn-sm" style="margin-top:6px" onclick="approveTimeRequest('${pcId}','${d.id}')">✅ Aprobar +30min</button>`:''}
+        </div>`;
+      }).join('');
+      container.scrollTop = container.scrollHeight;
+    }
+  );
+};
+
+window.sendChatMsg = async function() {
+  const input = document.getElementById('chatInput');
+  const text = input?.value?.trim();
+  if (!text||!selectedChatPC) return;
+  await addDoc(collection(db,'messages'), {
+    pcId:selectedChatPC, sender:'admin', text, ts:serverTimestamp(), type:'message'
+  });
+  input.value='';
+};
+
+window.approveTimeRequest = async function(pcId, msgId) {
+  await updateDoc(doc(db,'messages',msgId), {approved:true});
+  await openAddTime(pcId);
+};
+
+/* ══ HISTORY ══ */
+async function loadHistory() {
+  const container = document.getElementById('historyContainer');
+  const snap = await getDocs(query(collection(db,'history'), orderBy('ts','desc'), limit(100)));
+  const history = snap.docs.map(d=>d.data());
+  if (!history.length) { container.innerHTML='<div class="empty-state"><div class="ei">📋</div><p>Sin registros</p></div>'; return; }
+  container.innerHTML=`<div class="card"><table class="history-table">
+    <thead><tr><th>Fecha</th><th>Cliente</th><th>Puntos</th><th>Tipo</th></tr></thead>
+    <tbody>${history.map(h=>`<tr>
+      <td style="color:var(--muted);font-size:12px">${h.ts?.toDate?.()?.toLocaleString('es-CO')||'—'}</td>
+      <td>${h.clientName||'—'}${h.type==='sale'&&h.note?`<div style="color:var(--muted);font-size:11px;margin-top:2px">${h.note}</div>`:''}</td>
+      <td>${h.type==='sale'
+        ?`<span class="badge badge-pts">$${(h.total||0).toLocaleString()}</span>`
+        :h.type==='redeem'
+        ?`<span class="badge badge-redeem">${h.pts} pts</span>`
+        :`<span class="badge badge-pts">+${h.pts} pts</span>`}</td>
+      <td>${h.type==='qrspin'?'📱 QR Ruleta':h.type==='redeem'?'🎁 Canje':h.type==='pc_session'?'🖥️ Sesión':h.type==='sale'?'🧾 Venta':'✏️ Manual'}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+/* ══ HELPERS ══ */
+function initials(n){ return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+window.openModal = id=>document.getElementById(id).classList.add('open');
+window.closeModal = id=>document.getElementById(id).classList.remove('open');
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+
+let _toast;
+window.toast = function(msg,type='') {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='show '+(type||'');
+  clearTimeout(_toast); _toast=setTimeout(()=>el.className='',3000);
+};
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/nekokafebang/sw.js')
+      .then(r => console.log('SW registrado:', r.scope))
+      .catch(e => console.log('SW error:', e));
+  });
+}
+</script>
+</body>
+</html>

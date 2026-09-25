@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neko Kafe Bang</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0d12;--surface:#15151e;--surface2:#1e1e2a;--border:#2a2a3d;--pink:#ff6eb4;--pink2:#ff9ed4;--pink-glow:rgba(255,110,180,.18);--cyan:#5ee7ff;--text:#f0eaf8;--muted:#7a7a9a;--success:#5cffa0;--danger:#ff5e7a;--warn:#ffd166}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text)}
+
+/* BG */
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 30% 30%,rgba(255,110,180,.05) 0%,transparent 50%),radial-gradient(ellipse at 70% 70%,rgba(94,231,255,.04) 0%,transparent 50%);pointer-events:none}
+
+/* ══ IDLE / LOCK SCREEN ══ */
+#lockScreen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .5s}
+#lockScreen.hidden{opacity:0;pointer-events:none}
+.lock-logo{font-family:'Fredoka One',cursive;font-size:64px;color:var(--pink);text-shadow:0 0 60px var(--pink-glow);margin-bottom:8px;animation:glow 3s ease-in-out infinite}
+@keyframes glow{0%,100%{text-shadow:0 0 40px var(--pink-glow)}50%{text-shadow:0 0 80px rgba(255,110,180,.4)}}
+.lock-cat{font-size:100px;margin-bottom:24px;animation:bounce 2s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.lock-title{font-family:'Fredoka One',cursive;font-size:32px;color:var(--text);margin-bottom:8px}
+.lock-sub{color:var(--muted);font-size:16px;margin-bottom:40px;font-weight:600}
+.lock-time{font-family:'Fredoka One',cursive;font-size:120px;color:var(--pink);line-height:1;text-shadow:0 0 40px var(--pink-glow);margin-bottom:8px}
+.lock-status{font-size:18px;color:var(--muted);margin-bottom:40px;font-weight:700}
+.lock-status.ended{color:var(--danger)}
+.lock-status.active{color:var(--success)}
+
+/* ══ MAIN SESSION SCREEN ══ */
+#sessionScreen{position:fixed;inset:0;display:none;flex-direction:column}
+#sessionScreen.active{display:flex}
+
+/* TOP BAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px;position:relative;z-index:10}
+.topbar-logo{font-family:'Fredoka One',cursive;font-size:20px;color:var(--pink)}
+.topbar-pc{font-size:13px;color:var(--muted);font-weight:700}
+.topbar-client{font-size:15px;font-weight:800;flex:1}
+.topbar-timer{font-family:'Fredoka One',cursive;font-size:28px;color:var(--cyan);margin-left:auto}
+.topbar-timer.warn{color:var(--warn);animation:pulse 1s ease-in-out infinite}
+.topbar-timer.danger{color:var(--danger);animation:pulse .5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.topbar-pts{font-size:13px;color:var(--pink);font-weight:700;margin-left:16px}
+
+/* CONTENT */
+.content{flex:1;display:grid;grid-template-columns:1fr 320px;overflow:hidden}
+
+/* MAIN AREA */
+.main-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:24px;overflow-y:auto}
+.welcome-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:36px 40px;text-align:center;max-width:500px;width:100%;position:relative;overflow:hidden}
+.welcome-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--pink),var(--cyan),var(--pink))}
+.welcome-cat{font-size:56px;margin-bottom:12px}
+.welcome-name{font-family:'Fredoka One',cursive;font-size:28px;color:var(--pink);margin-bottom:4px}
+.welcome-sub{color:var(--muted);font-size:14px;margin-bottom:24px;font-weight:600}
+.pts-display{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:16px 24px;display:inline-flex;align-items:center;gap:12px;margin-bottom:20px}
+.pts-num{font-family:'Fredoka One',cursive;font-size:36px;color:var(--pink)}
+.pts-label{font-size:13px;color:var(--muted);font-weight:700}
+.action-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{padding:12px 22px;border-radius:12px;border:none;font-weight:800;font-size:14px;font-family:'Nunito',sans-serif;cursor:pointer;transition:all .2s}
+.btn-pink{background:linear-gradient(135deg,var(--pink),var(--pink2));color:#1a0a12;box-shadow:0 4px 16px rgba(255,110,180,.3)}
+.btn-pink:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,110,180,.4)}
+.btn-cyan{background:linear-gradient(135deg,var(--cyan),#a0f0ff);color:#051a20}
+.btn-cyan:hover{transform:translateY(-2px)}
+.btn-ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--pink)}
+
+/* MENU PANEL */
+.menu-panel{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin:16px 0 16px 0;max-width:500px;width:100%;display:none}
+.menu-panel.show{display:block}
+.menu-panel h3{font-family:'Fredoka One',cursive;font-size:18px;color:var(--pink);margin-bottom:14px}
+.menu-items-list{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto}
+.menu-item-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:12px}
+.menu-item-emoji{font-size:24px;width:36px;text-align:center}
+.menu-item-info{flex:1}
+.menu-item-name{font-weight:800;font-size:14px}
+.menu-item-cat{font-size:11px;color:var(--muted);font-weight:600}
+.menu-item-price{font-family:'Fredoka One',cursive;font-size:18px;color:var(--cyan)}
+
+/* CHAT SIDEBAR */
+.chat-sidebar{background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column}
+.chat-header{padding:16px 20px;border-bottom:1px solid var(--border);font-family:'Fredoka One',cursive;font-size:18px;color:var(--pink);display:flex;align-items:center;gap:8px}
+.chat-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.chat-msg{max-width:85%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.5}
+.chat-msg.admin{background:rgba(255,110,180,.12);border:1px solid rgba(255,110,180,.2);align-self:flex-start;border-radius:12px 12px 12px 4px}
+.chat-msg.client{background:var(--surface2);border:1px solid var(--border);align-self:flex-end;border-radius:12px 12px 4px 12px}
+.chat-msg .msg-sender{font-size:10px;color:var(--muted);margin-bottom:3px;font-weight:700}
+.chat-msg .msg-time{font-size:10px;color:var(--muted);margin-top:4px;text-align:right}
+.chat-empty-msg{text-align:center;color:var(--muted);font-size:13px;padding:20px;font-weight:600}
+.chat-input-area{padding:14px;border-top:1px solid var(--border);display:flex;gap:8px}
+.chat-input-area input{flex:1;padding:10px 13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+.chat-input-area input:focus{border-color:var(--pink)}
+.chat-input-area button{padding:10px 14px;border-radius:10px;background:linear-gradient(135deg,var(--pink),var(--pink2));border:none;color:#1a0a12;font-weight:800;font-size:13px;cursor:pointer}
+
+/* NOTIF */
+.notif{position:fixed;top:80px;right:24px;background:var(--surface2);border:1.5px solid var(--pink);border-radius:14px;padding:12px 18px;font-size:14px;font-weight:700;z-index:999;transform:translateX(200px);opacity:0;transition:all .3s;max-width:280px}
+.notif.show{transform:translateX(0);opacity:1}
+
+/* TIME REQUEST SUCCESS */
+.request-sent{background:rgba(92,255,160,.08);border:1px solid rgba(92,255,160,.2);border-radius:12px;padding:12px 16px;font-size:13px;color:var(--success);text-align:center;margin-top:8px;display:none}
+.request-sent.show{display:block}
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lockScreen">
+  <div class="lock-cat" id="lockCat">🐱</div>
+  <div class="lock-logo">Neko Kafe Bang</div>
+  <div class="lock-title" id="lockTitle">Bienvenido</div>
+  <div class="lock-sub" id="lockSub">Habla con el administrador para iniciar tu sesión</div>
+  <div class="lock-time" id="lockTime" style="display:none"></div>
+  <div class="lock-status" id="lockStatus" style="display:none"></div>
+</div>
+
+<!-- SESSION SCREEN -->
+<div id="sessionScreen">
+  <div class="topbar">
+    <div class="topbar-logo">🐱 Neko</div>
+    <div class="topbar-pc" id="topbarPC"></div>
+    <div class="topbar-client" id="topbarClient"></div>
+    <div class="topbar-timer" id="topbarTimer">--:--</div>
+    <div class="topbar-pts" id="topbarPts">🐾 0 pts</div>
+  </div>
+  <div class="content">
+    <div class="main-area">
+      <div class="welcome-card">
+        <div class="welcome-cat">🐱</div>
+        <div class="welcome-name" id="welcomeName">¡Hola!</div>
+        <div class="welcome-sub">Disfruta tu tiempo en Neko Kafe Bang</div>
+        <div class="pts-display">
+          <div class="pts-num" id="sessionPts">0</div>
+          <div class="pts-label">puntos<br>acumulados</div>
+        </div>
+        <div class="action-btns">
+          <button class="btn btn-pink" onclick="toggleMenu()">🍜 Ver menú</button>
+          <button class="btn btn-cyan" onclick="requestMoreTime()">⏱ Pedir más tiempo</button>
+        </div>
+        <div class="request-sent" id="requestSent">✅ Solicitud enviada al administrador</div>
+      </div>
+      <div class="menu-panel" id="menuPanel">
+        <h3>🍜 Menú Neko Kafe</h3>
+        <div class="menu-items-list" id="menuItemsList"><div style="color:var(--muted);font-size:13px;padding:8px">Cargando menú...</div></div>
+      </div>
+    </div>
+    <div class="chat-sidebar">
+      <div class="chat-header"><div class="chat-dot"></div> Chat con Admin</div>
+      <div class="chat-messages" id="chatMessages"><div class="chat-empty-msg">👋 ¡Hola! Escríbenos si necesitas algo.</div></div>
+      <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendMsg()">
+        <button onclick="sendMsg()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, collection, addDoc, query, where, orderBy, limit,
+  onSnapshot, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCdXUX2_ydiPcj51ciV9YrSczAcs6m2F30",
+  authDomain: "loyalspin03.firebaseapp.com",
+  projectId: "loyalspin03",
+  storageBucket: "loyalspin03.firebasestorage.app",
+  messagingSenderId: "480148425420",
+  appId: "1:480148425420:web:f0f8c0e749fdc0da8e1069"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const params = new URLSearchParams(window.location.search);
+const pcId = params.get('pc');
+
+let currentPC = null;
+let timerInterval = null;
+let menuLoaded = false;
+let menuVisible = false;
+let clientPts = 0;
+
+if (!pcId) {
+  document.getElementById('lockSub').textContent = 'URL inválida. Falta el parámetro ?pc=';
+} else {
+  init();
+}
+
+async function init() {
+  // Listen to PC document in real time
+  onSnapshot(doc(db,'pcs',pcId), snap => {
+    if (!snap.exists()) return;
+    currentPC = {id:snap.id,...snap.data()};
+    handlePCState(currentPC);
+  });
+}
+
+function handlePCState(pc) {
+  if (pc.sessionActive) {
+    // Desbloquear ventana si estamos en Electron
+    if (window.nekoApp) window.nekoApp.unlockScreen();
+    showSession(pc);
+  } else {
+    // Bloquear pantalla si estamos en Electron
+    if (window.nekoApp) window.nekoApp.lockScreen();
+    showLock(pc);
+  }
+}
+
+async function showSession(pc) {
+  // Hide lock, show session
+  document.getElementById('lockScreen').classList.add('hidden');
+  const sessionScreen = document.getElementById('sessionScreen');
+  sessionScreen.classList.add('active');
+
+  document.getElementById('topbarPC').textContent = pc.name;
+  document.getElementById('topbarClient').textContent = `👤 ${pc.clientName||''}`;
+  document.getElementById('welcomeName').textContent = `¡Hola, ${pc.clientName?.split(' ')[0]||''}!`;
+
+  // Load client points
+  if (pc.clientId) {
+    const cSnap = await getDoc(doc(db,'clients',pc.clientId));
+    if (cSnap.exists()) {
+      clientPts = cSnap.data().points||0;
+      document.getElementById('sessionPts').textContent = clientPts.toLocaleString();
+      document.getElementById('topbarPts').textContent = `🐾 ${clientPts.toLocaleString()} pts`;
+    }
+  }
+
+  startTimer(pc);
+  listenChat(pc);
+}
+
+function showLock(pc) {
+  clearInterval(timerInterval);
+  document.getElementById('sessionScreen').classList.remove('active');
+  const lock = document.getElementById('lockScreen');
+  lock.classList.remove('hidden');
+
+  if (pc.blocked && !pc.sessionActive) {
+    document.getElementById('lockCat').textContent = '😿';
+    document.getElementById('lockTitle').textContent = '¡Tiempo agotado!';
+    document.getElementById('lockSub').textContent = 'Habla con el administrador para agregar más tiempo';
+    document.getElementById('lockTime').style.display = 'none';
+    document.getElementById('lockStatus').style.display = 'block';
+    document.getElementById('lockStatus').textContent = '⏰ Sesión terminada';
+    document.getElementById('lockStatus').className = 'lock-status ended';
+  } else {
+    document.getElementById('lockCat').textContent = '🐱';
+    document.getElementById('lockTitle').textContent = 'Neko Kafe Bang';
+    document.getElementById('lockSub').textContent = 'Habla con el administrador para iniciar tu sesión';
+    document.getElementById('lockTime').style.display = 'none';
+    document.getElementById('lockStatus').style.display = 'none';
+  }
+}
+
+function startTimer(pc) {
+  clearInterval(timerInterval);
+  updateTimer(pc);
+  timerInterval = setInterval(()=>updateTimer(pc), 1000);
+}
+
+let sessionEnded = false;
+
+async function updateTimer(pc) {
+  if (!pc.endTime) return;
+  const end = pc.endTime.toDate ? pc.endTime.toDate().getTime() : new Date(pc.endTime).getTime();
+  const left = Math.floor((end - Date.now()) / 1000);
+
+  const timerEl = document.getElementById('topbarTimer');
+
+  if (left <= 0) {
+    timerEl.textContent = '00:00';
+    timerEl.className = 'topbar-timer danger';
+    clearInterval(timerInterval);
+
+    // Auto-block via Firebase (only once)
+    if (!sessionEnded) {
+      sessionEnded = true;
+      try {
+        const { updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        await updateDoc(doc(db, 'pcs', pcId), {
+          sessionActive: false,
+          blocked: true,
+          clientId: null,
+          clientName: null,
+          clientPhone: null,
+          endTime: null,
+          startTime: null
+        });
+      } catch(e) { console.error('Error bloqueando PC:', e); }
+    }
+    return;
+  }
+
+  const h = Math.floor(left/3600);
+  const m = Math.floor((left%3600)/60);
+  const s = left%60;
+  const str = h>0
+    ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+    : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+  timerEl.textContent = str;
+  if (left <= 300) timerEl.className = 'topbar-timer warn';
+  else if (left <= 60) timerEl.className = 'topbar-timer danger';
+  else timerEl.className = 'topbar-timer';
+}
+
+/* ══ CHAT ══ */
+function listenChat(pc) {
+  onSnapshot(
+    query(collection(db,'messages'), where('pcId','==',pcId), orderBy('ts','asc'), limit(50)),
+    snap => {
+      const container = document.getElementById('chatMessages');
+      if (snap.empty) {
+        container.innerHTML = '<div class="chat-empty-msg">👋 ¡Hola! Escríbenos si necesitas algo.</div>';
+        return;
+      }
+      container.innerHTML = snap.docs.map(d=>{
+        const m = d.data();
+        const isAdmin = m.sender==='admin';
+        return `<div class="chat-msg ${isAdmin?'admin':'client'}">
+          <div class="msg-sender">${isAdmin?'🐱 Admin':'Tú'}</div>
+          ${m.text}
+          <div class="msg-time">${m.ts?.toDate?.()?.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})||''}</div>
+        </div>`;
+      }).join('');
+      container.scrollTop = container.scrollHeight;
+
+      // Notify new admin message
+      const last = snap.docs[snap.docs.length-1]?.data();
+      if (last?.sender==='admin') showNotif('💬 Nuevo mensaje del admin: '+last.text);
+    }
+  );
+}
+
+window.sendMsg = async function() {
+  const input = document.getElementById('chatInput');
+  const text = input?.value?.trim();
+  if (!text||!currentPC) return;
+  await addDoc(collection(db,'messages'), {
+    pcId, sender:'client', senderName:currentPC.clientName||'Cliente',
+    text, ts:serverTimestamp(), type:'message'
+  });
+  input.value='';
+};
+
+/* ══ REQUEST TIME ══ */
+window.requestMoreTime = async function() {
+  if (!currentPC) return;
+  await addDoc(collection(db,'messages'), {
+    pcId, sender:'client', senderName:currentPC.clientName||'Cliente',
+    text:'Solicitud de tiempo adicional', ts:serverTimestamp(), type:'time_request'
+  });
+  const el = document.getElementById('requestSent');
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 4000);
+};
+
+/* ══ MENU ══ */
+window.toggleMenu = async function() {
+  menuVisible = !menuVisible;
+  const panel = document.getElementById('menuPanel');
+  panel.classList.toggle('show', menuVisible);
+  if (menuVisible && !menuLoaded) {
+    menuLoaded = true;
+    const snap = await getDoc(doc(db,'pcs',pcId)); // just to trigger load
+    const menuSnap = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js")
+      .then(({getDocs, collection, query, orderBy})=>
+        getDocs(query(collection(db,'menu'), orderBy('createdAt','desc')))
+      );
+    const items = menuSnap.docs.map(d=>d.data());
+    const list = document.getElementById('menuItemsList');
+    if (!items.length) { list.innerHTML='<div style="color:var(--muted);font-size:13px;padding:8px">El menú está vacío por ahora</div>'; return; }
+    list.innerHTML = items.map(item=>`
+      <div class="menu-item-row">
+        <div class="menu-item-emoji">${item.emoji||'🍜'}</div>
+        <div class="menu-item-info">
+          <div class="menu-item-name">${item.name}</div>
+          <div class="menu-item-cat">${item.category||''}</div>
+          ${item.description?`<div style="font-size:11px;color:var(--muted)">${item.description}</div>`:''}
+        </div>
+        <div class="menu-item-price">$${(item.price||0).toLocaleString()}</div>
+      </div>
+    `).join('');
+  }
+};
+
+/* ══ NOTIF ══ */
+let notifTimer;
+function showNotif(msg) {
+  const el = document.getElementById('notif');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(()=>el.classList.remove('show'), 4000);
+}
+
+// Fullscreen on session start
+document.addEventListener('click', ()=>{
+  if (currentPC?.sessionActive && !document.fullscreenElement) {
+    document.documentElement.requestFullscreen?.().catch(()=>{});
+  }
+}, {once:true});
+</script>
+</body>
+</html>

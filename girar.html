@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Neko Kafe Bang — Ruleta</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0d12;--surface:#15151e;--surface2:#1e1e2a;--border:#2a2a3d;--pink:#ff6eb4;--pink2:#ff9ed4;--pink-glow:rgba(255,110,180,.18);--cyan:#5ee7ff;--text:#f0eaf8;--muted:#7a7a9a;--success:#5cffa0;--danger:#ff5e7a;--warn:#ffd166}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(255,110,180,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(94,231,255,.06) 0%,transparent 50%);pointer-events:none}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:36px 28px;width:420px;max-width:100%;text-align:center;position:relative;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--pink),var(--cyan),var(--pink))}
+.logo{font-family:'Fredoka One',cursive;font-size:26px;color:var(--pink);text-shadow:0 0 30px var(--pink-glow);margin-bottom:2px}
+.cat{font-size:24px;vertical-align:middle}
+.hello{color:var(--muted);font-size:13px;font-weight:600;margin-bottom:6px}
+.client-name{font-family:'Fredoka One',cursive;font-size:22px;color:var(--text);margin-bottom:18px}
+
+.progress{display:flex;justify-content:center;gap:6px;margin-bottom:20px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--surface2);border:1.5px solid var(--border);transition:all .25s}
+.dot.done{background:var(--success);border-color:var(--success)}
+.dot.current{background:var(--pink);border-color:var(--pink);box-shadow:0 0 10px var(--pink-glow)}
+
+.wheel-wrap{position:relative;width:280px;height:280px;margin:0 auto 24px}
+.pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--pink);z-index:5;filter:drop-shadow(0 0 8px var(--pink-glow))}
+.wheel{width:100%;height:100%;border-radius:50%;position:relative;border:6px solid var(--surface2);box-shadow:0 0 0 2px var(--border),0 10px 40px rgba(0,0,0,.5);transition:transform 4.2s cubic-bezier(.17,.67,.14,1)}
+.seg-label{position:absolute;top:50%;left:50%;width:120px;text-align:center;font-family:'Fredoka One',cursive;font-size:20px;color:#1a0a12;transform-origin:0 0;pointer-events:none}
+.hub{position:absolute;top:50%;left:50%;width:52px;height:52px;background:var(--surface);border:3px solid var(--pink);border-radius:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-size:22px;z-index:4;box-shadow:0 0 16px var(--pink-glow)}
+
+.btn{width:100%;padding:15px;border-radius:14px;border:none;font-weight:800;font-size:16px;font-family:'Fredoka One',cursive;cursor:pointer;letter-spacing:.03em;transition:all .2s}
+.btn-pink{background:linear-gradient(135deg,var(--pink),var(--pink2));color:#1a0a12;box-shadow:0 8px 24px rgba(255,110,180,.35)}
+.btn-pink:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 32px rgba(255,110,180,.45)}
+.btn-pink:disabled{opacity:.5;cursor:not-allowed}
+.result{display:none;margin-top:16px;padding:14px;background:rgba(92,255,160,.08);border:1px solid rgba(92,255,160,.2);border-radius:14px;color:var(--success);font-weight:800;font-size:15px}
+.result.show{display:block}
+.total-box{margin-top:18px;padding:18px;background:var(--surface2);border-radius:16px;display:none}
+.total-box.show{display:block}
+.total-num{font-family:'Fredoka One',cursive;font-size:42px;color:var(--pink);text-shadow:0 0 20px var(--pink-glow)}
+.total-label{color:var(--muted);font-size:13px;font-weight:700;margin-top:4px}
+
+.state-msg{padding:40px 10px}
+.state-icon{font-size:56px;margin-bottom:16px}
+.state-title{font-family:'Fredoka One',cursive;font-size:22px;margin-bottom:8px}
+.state-sub{color:var(--muted);font-size:14px;font-weight:600}
+.loading-spin{width:36px;height:36px;border:4px solid var(--surface2);border-top-color:var(--pink);border-radius:50%;margin:0 auto 16px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <div class="state-msg">
+    <div class="loading-spin"></div>
+    <div class="state-title">Cargando tu giro...</div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, runTransaction, addDoc, collection,
+  updateDoc, increment, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCdXUX2_ydiPcj51ciV9YrSczAcs6m2F30",
+  authDomain: "loyalspin03.firebaseapp.com",
+  projectId: "loyalspin03",
+  storageBucket: "loyalspin03.firebasestorage.app",
+  messagingSenderId: "480148425420",
+  appId: "1:480148425420:web:f0f8c0e749fdc0da8e1069"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Premios de la ruleta (puntos LoyalSpin). Ajusta libremente aquí.
+const PRIZES = [
+  { label:'10',  pts:10,  color:'#ff6eb4', weight:22 },
+  { label:'50',  pts:50,  color:'#5ee7ff', weight:10 },
+  { label:'20',  pts:20,  color:'#ffd166', weight:20 },
+  { label:'100', pts:100, color:'#5cffa0', weight:4  },
+  { label:'15',  pts:15,  color:'#ff9ed4', weight:20 },
+  { label:'30',  pts:30,  color:'#a0f0ff', weight:12 },
+  { label:'5',   pts:5,   color:'#ff5e7a', weight:26 },
+  { label:'70',  pts:70,  color:'#c0306a', weight:6  }
+];
+const SEG = 360 / PRIZES.length;
+
+function card(html) { document.getElementById('card').innerHTML = html; }
+
+function stateScreen(icon, title, sub) {
+  card(`<div class="state-msg">
+    <div class="state-icon">${icon}</div>
+    <div class="state-title">${title}</div>
+    <div class="state-sub">${sub}</div>
+  </div>`);
+}
+
+function pickPrize() {
+  const totalW = PRIZES.reduce((s,p)=>s+p.weight,0);
+  let r = Math.random()*totalW;
+  for (let i=0;i<PRIZES.length;i++) { r -= PRIZES[i].weight; if (r<=0) return i; }
+  return PRIZES.length-1;
+}
+
+function buildWheelGradient() {
+  let stops = [];
+  PRIZES.forEach((p,i)=> stops.push(`${p.color} ${i*SEG}deg ${(i+1)*SEG}deg`));
+  return `conic-gradient(${stops.join(',')})`;
+}
+
+function buildLabels() {
+  return PRIZES.map((p,i)=>{
+    const angle = i*SEG + SEG/2;
+    return `<div class="seg-label" style="transform:rotate(${angle}deg) translate(70px,-10px)">${p.label}</div>`;
+  }).join('');
+}
+
+// ══ Parse token from URL ══
+const params = new URLSearchParams(location.search);
+const d = params.get('d');
+let payload;
+try { payload = JSON.parse(atob(d)); } catch(e) { payload = null; }
+
+if (!payload || !payload.t) {
+  stateScreen('❌','QR inválido','Este enlace no es válido. Pide un nuevo QR al administrador.');
+} else {
+  init(payload);
+}
+
+let currentRotation = 0;
+let spinning = false;
+
+async function init(payload) {
+  const tokenRef = doc(db, 'tokens', payload.t);
+  const tSnap = await getDoc(tokenRef);
+
+  if (!tSnap.exists()) {
+    stateScreen('❌','Giro no encontrado','Este QR ya no existe. Pide uno nuevo.');
+    return;
+  }
+  const token = tSnap.data();
+  if (token.cancelled) {
+    stateScreen('🚫','Giro cancelado','El administrador canceló este giro.');
+    return;
+  }
+  const spinsTotal = token.spinsTotal || payload.n || 1;
+  const spinsUsed = token.spinsUsed || 0;
+
+  if (spinsUsed >= spinsTotal) {
+    stateScreen('✅','¡Ya usaste todos tus giros!', `Ganaste ${token.pointsWon||0} puntos en total. Pide un nuevo QR para volver a girar.`);
+    return;
+  }
+
+  renderWheelScreen(payload, token, spinsTotal, spinsUsed);
+}
+
+function renderWheelScreen(payload, token, spinsTotal, spinsUsed) {
+  const dots = Array.from({length:spinsTotal}).map((_,i)=>{
+    const cls = i < spinsUsed ? 'done' : (i===spinsUsed ? 'current' : '');
+    return `<div class="dot ${cls}"></div>`;
+  }).join('');
+
+  card(`
+    <div class="logo"><span class="cat">🐱</span> Neko Kafe Bang</div>
+    <div class="hello">¡Hola,</div>
+    <div class="client-name">${payload.name||'Cliente'}!</div>
+    <div class="progress">${dots}</div>
+    <div class="wheel-wrap">
+      <div class="pointer"></div>
+      <div class="wheel" id="wheel" style="background:${buildWheelGradient()}">${buildLabels()}</div>
+      <div class="hub">🎰</div>
+    </div>
+    <button class="btn btn-pink" id="spinBtn">🎰 Girar (${spinsUsed+1} de ${spinsTotal})</button>
+    <div class="result" id="result"></div>
+    <div class="total-box" id="totalBox">
+      <div class="total-num" id="totalNum">0</div>
+      <div class="total-label">puntos ganados en total</div>
+    </div>
+  `);
+
+  document.getElementById('spinBtn').addEventListener('click', () => doSpin(payload, spinsTotal));
+}
+
+async function doSpin(payload, spinsTotal) {
+  if (spinning) return;
+  spinning = true;
+  const btn = document.getElementById('spinBtn');
+  btn.disabled = true;
+  document.getElementById('result').classList.remove('show');
+
+  const tokenRef = doc(db, 'tokens', payload.t);
+
+  // Reservamos el giro de forma atómica ANTES de animar, para que
+  // nunca se puedan hacer más giros de los contratados (ni con doble clic
+  // ni recargando la página a mitad de la animación).
+  let reserved;
+  try {
+    reserved = await runTransaction(db, async (tx) => {
+      const snap = await tx.get(tokenRef);
+      if (!snap.exists()) throw new Error('no-token');
+      const t = snap.data();
+      const total = t.spinsTotal || spinsTotal;
+      const used = t.spinsUsed || 0;
+      if (t.cancelled) throw new Error('cancelled');
+      if (used >= total) throw new Error('no-spins-left');
+      tx.update(tokenRef, { spinsUsed: used + 1 });
+      return { total, newUsed: used + 1 };
+    });
+  } catch (e) {
+    spinning = false;
+    if (e.message === 'no-spins-left') {
+      stateScreen('✅','¡Ya usaste todos tus giros!','Pide un nuevo QR para volver a girar.');
+    } else {
+      stateScreen('❌','Ocurrió un error','Intenta de nuevo o pide un nuevo QR.');
+    }
+    return;
+  }
+
+  const prizeIdx = pickPrize();
+  const prize = PRIZES[prizeIdx];
+  const segCenter = prizeIdx*SEG + SEG/2;
+  const landingAngle = (360 - segCenter) % 360;
+  const baseline = currentRotation - (currentRotation % 360);
+  const finalRotation = baseline + 360*6 + landingAngle + (Math.random()*10-5);
+  currentRotation = finalRotation;
+
+  const wheel = document.getElementById('wheel');
+  wheel.style.transform = `rotate(${finalRotation}deg)`;
+
+  wheel.addEventListener('transitionend', async function onEnd() {
+    wheel.removeEventListener('transitionend', onEnd);
+    await finishSpin(payload, prize, reserved.total, reserved.newUsed);
+  }, { once:true });
+}
+
+async function finishSpin(payload, prize, spinsTotal, newUsed) {
+  // Otorgar puntos al cliente y dejar registro en historial
+  await updateDoc(doc(db,'clients', payload.id), { points: increment(prize.pts) });
+  await updateDoc(doc(db,'tokens', payload.t), { pointsWon: increment(prize.pts) });
+  await addDoc(collection(db,'history'), {
+    clientId: payload.id, clientName: payload.name,
+    pts: prize.pts, type:'qrspin', ts: serverTimestamp(),
+    note: `Giro ${newUsed} de ${spinsTotal}`
+  });
+
+  const resultEl = document.getElementById('result');
+  resultEl.textContent = `🎉 ¡Ganaste ${prize.pts} puntos!`;
+  resultEl.classList.add('show');
+
+  spinning = false;
+
+  if (newUsed >= spinsTotal) {
+    await updateDoc(doc(db,'tokens', payload.t), { used: true });
+    const finalSnap = await getDoc(doc(db,'tokens', payload.t));
+    const totalWon = finalSnap.data().pointsWon || prize.pts;
+    document.getElementById('spinBtn').remove();
+    const totalBox = document.getElementById('totalBox');
+    totalBox.classList.add('show');
+    document.getElementById('totalNum').textContent = totalWon;
+    document.querySelectorAll('.dot').forEach(d=>d.classList.add('done'));
+  } else {
+    const btn = document.getElementById('spinBtn');
+    btn.disabled = false;
+    btn.textContent = `🎰 Girar (${newUsed+1} de ${spinsTotal})`;
+    document.querySelectorAll('.dot').forEach((d,i)=>{
+      d.classList.remove('current');
+      if (i < newUsed) d.classList.add('done');
+      if (i === newUsed) d.classList.add('current');
+    });
+  }
+}
+</script>
+</body>
+</html>
