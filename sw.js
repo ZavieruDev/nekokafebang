@@ -1,11 +1,13 @@
-const CACHE = 'nekokafe-v1';
+const CACHE = 'nekokafe-v2';
 const ASSETS = [
   '/nekokafebang/',
   '/nekokafebang/index.html',
   '/nekokafebang/pc.html',
   '/nekokafebang/manifest.json',
   '/nekokafebang/icons/icon-192.png',
-  '/nekokafebang/icons/icon-512.png'
+  '/nekokafebang/icons/icon-512.png',
+  '/nekokafebang/icons/icon-maskable-192.png',
+  '/nekokafebang/icons/icon-maskable-512.png'
 ];
 
 self.addEventListener('install', e => {
