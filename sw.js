@@ -1,4 +1,4 @@
-const CACHE = 'nekokafe-v2';
+const CACHE = 'nekokafe-v3';
 const ASSETS = [
   '/nekokafebang/',
   '/nekokafebang/index.html',
@@ -7,7 +7,8 @@ const ASSETS = [
   '/nekokafebang/icons/icon-192.png',
   '/nekokafebang/icons/icon-512.png',
   '/nekokafebang/icons/icon-maskable-192.png',
-  '/nekokafebang/icons/icon-maskable-512.png'
+  '/nekokafebang/icons/icon-maskable-512.png',
+  '/nekokafebang/icons/logo.png'
 ];
 
 self.addEventListener('install', e => {

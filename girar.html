@@ -3,48 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Neko Kafe Bang — Ruleta</title>
+<title>NekoRuleta — ¡Gira tu ruleta!</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0d0d12;--surface:#15151e;--surface2:#1e1e2a;--border:#2a2a3d;--pink:#ff6eb4;--pink2:#ff9ed4;--pink-glow:rgba(255,110,180,.18);--cyan:#5ee7ff;--text:#f0eaf8;--muted:#7a7a9a;--success:#5cffa0;--danger:#ff5e7a;--warn:#ffd166}
+:root{--bg:#0d0d12;--surface:#191922;--border:#2a2a3d;--pink:#ff6eb4;--pink2:#ff9ed4;--pink-glow:rgba(255,110,180,.18);--cyan:#5ee7ff;--text:#f0eaf8;--muted:#8a8aa5;--success:#5cffa0;--danger:#ff5e7a}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(255,110,180,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(94,231,255,.06) 0%,transparent 50%);pointer-events:none}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
 
-.card{background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:36px 28px;width:420px;max-width:100%;text-align:center;position:relative;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5)}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--pink),var(--cyan),var(--pink))}
-.logo{font-family:'Fredoka One',cursive;font-size:26px;color:var(--pink);text-shadow:0 0 30px var(--pink-glow);margin-bottom:2px}
-.cat{font-size:24px;vertical-align:middle}
-.hello{color:var(--muted);font-size:13px;font-weight:600;margin-bottom:6px}
-.client-name{font-family:'Fredoka One',cursive;font-size:22px;color:var(--text);margin-bottom:18px}
+.card{background:var(--surface);border-radius:28px;padding:40px 32px;width:420px;max-width:100%;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.eyebrow{font-size:12px;letter-spacing:.14em;color:var(--muted);font-weight:700;margin-bottom:22px}
+.eyebrow b{color:var(--pink);font-weight:800}
 
-.progress{display:flex;justify-content:center;gap:6px;margin-bottom:20px}
-.dot{width:12px;height:12px;border-radius:50%;background:var(--surface2);border:1.5px solid var(--border);transition:all .25s}
-.dot.done{background:var(--success);border-color:var(--success)}
-.dot.current{background:var(--pink);border-color:var(--pink);box-shadow:0 0 10px var(--pink-glow)}
+.avatar{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--pink2));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-family:'Fredoka One',cursive;font-size:26px;color:#1a0a12;box-shadow:0 8px 24px rgba(255,110,180,.35)}
+.client-name{font-family:'Fredoka One',cursive;font-size:24px;margin-bottom:6px}
+.points-line{color:var(--muted);font-size:14px;font-weight:600;margin-bottom:28px}
+.points-line b{color:var(--pink);font-size:16px}
 
-.wheel-wrap{position:relative;width:280px;height:280px;margin:0 auto 24px}
-.pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--pink);z-index:5;filter:drop-shadow(0 0 8px var(--pink-glow))}
-.wheel{width:100%;height:100%;border-radius:50%;position:relative;border:6px solid var(--surface2);box-shadow:0 0 0 2px var(--border),0 10px 40px rgba(0,0,0,.5);transition:transform 4.2s cubic-bezier(.17,.67,.14,1)}
-.seg-label{position:absolute;top:50%;left:50%;width:120px;text-align:center;font-family:'Fredoka One',cursive;font-size:20px;color:#1a0a12;transform-origin:0 0;pointer-events:none}
-.hub{position:absolute;top:50%;left:50%;width:52px;height:52px;background:var(--surface);border:3px solid var(--pink);border-radius:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-size:22px;z-index:4;box-shadow:0 0 16px var(--pink-glow)}
+.wheel-wrap{position:relative;width:270px;height:270px;margin:0 auto 26px}
+.pointer{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-top:22px solid var(--pink);z-index:5;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
+.wheel{width:100%;height:100%;border-radius:50%;position:relative;border:8px solid var(--surface);box-shadow:0 0 0 2px var(--border),0 10px 40px rgba(0,0,0,.5);transition:transform 4.2s cubic-bezier(.17,.67,.14,1)}
+.seg-label{position:absolute;top:50%;left:50%;width:48px;text-align:center;font-family:'Fredoka One',cursive;font-size:12px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.55),0 0 2px rgba(0,0,0,.3);transform-origin:0 0;pointer-events:none}
+.hub{position:absolute;top:50%;left:50%;width:50px;height:50px;background:#12121a;border:3px solid var(--pink);border-radius:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-size:22px;z-index:4}
 
-.btn{width:100%;padding:15px;border-radius:14px;border:none;font-weight:800;font-size:16px;font-family:'Fredoka One',cursive;cursor:pointer;letter-spacing:.03em;transition:all .2s}
-.btn-pink{background:linear-gradient(135deg,var(--pink),var(--pink2));color:#1a0a12;box-shadow:0 8px 24px rgba(255,110,180,.35)}
-.btn-pink:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 32px rgba(255,110,180,.45)}
-.btn-pink:disabled{opacity:.5;cursor:not-allowed}
+.spins-line{color:var(--muted);font-size:14px;font-weight:600;margin-bottom:18px}
+.spins-line b{color:var(--pink)}
+
+.btn{width:100%;padding:16px;border-radius:16px;border:none;font-weight:800;font-size:16px;font-family:'Fredoka One',cursive;cursor:pointer;letter-spacing:.03em;transition:all .2s;background:linear-gradient(135deg,var(--pink),var(--pink2));color:#1a0a12;box-shadow:0 8px 24px rgba(255,110,180,.35)}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 32px rgba(255,110,180,.45)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
 .result{display:none;margin-top:16px;padding:14px;background:rgba(92,255,160,.08);border:1px solid rgba(92,255,160,.2);border-radius:14px;color:var(--success);font-weight:800;font-size:15px}
 .result.show{display:block}
-.total-box{margin-top:18px;padding:18px;background:var(--surface2);border-radius:16px;display:none}
+.total-box{margin-top:16px;padding:18px;background:#12121a;border-radius:16px;display:none}
 .total-box.show{display:block}
-.total-num{font-family:'Fredoka One',cursive;font-size:42px;color:var(--pink);text-shadow:0 0 20px var(--pink-glow)}
+.total-num{font-family:'Fredoka One',cursive;font-size:40px;color:var(--pink)}
 .total-label{color:var(--muted);font-size:13px;font-weight:700;margin-top:4px}
 
 .state-msg{padding:40px 10px}
 .state-icon{font-size:56px;margin-bottom:16px}
 .state-title{font-family:'Fredoka One',cursive;font-size:22px;margin-bottom:8px}
 .state-sub{color:var(--muted);font-size:14px;font-weight:600}
-.loading-spin{width:36px;height:36px;border:4px solid var(--surface2);border-top-color:var(--pink);border-radius:50%;margin:0 auto 16px;animation:spin 1s linear infinite}
+.loading-spin{width:36px;height:36px;border:4px solid var(--border);border-top-color:var(--pink);border-radius:50%;margin:0 auto 16px;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
@@ -75,18 +74,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Premios de la ruleta (puntos LoyalSpin). Ajusta libremente aquí.
-const PRIZES = [
-  { label:'10',  pts:10,  color:'#ff6eb4', weight:22 },
-  { label:'50',  pts:50,  color:'#5ee7ff', weight:10 },
-  { label:'20',  pts:20,  color:'#ffd166', weight:20 },
-  { label:'100', pts:100, color:'#5cffa0', weight:4  },
-  { label:'15',  pts:15,  color:'#ff9ed4', weight:20 },
-  { label:'30',  pts:30,  color:'#a0f0ff', weight:12 },
-  { label:'5',   pts:5,   color:'#ff5e7a', weight:26 },
-  { label:'70',  pts:70,  color:'#c0306a', weight:6  }
-];
-const SEG = 360 / PRIZES.length;
+// Premios de la ruleta — 20 gajos del MISMO tamaño (se ven parejos,
+// como el diseño original). La probabilidad se logra repitiendo cada
+// valor las veces necesarias, e INTERCALÁNDOLO alrededor del círculo
+// para que ni siquiera se note visualmente que un valor se repite más
+// que otro: 50→10 gajos (50%), 100→5 (25%), 200→2 (10%), 500→2 (10%),
+// 1000→1 (5%).
+const COLORS = { 50:'#ff6eb4', 100:'#ff8c42', 200:'#fbbf24', 500:'#4d94ff', 1000:'#a855f7' };
+const SLOT_ORDER = [50,100,50,200,50,100,50,500,50,100,50,200,50,100,50,1000,50,100,50,500];
+const SEG = 360 / SLOT_ORDER.length;
+const PRIZES = SLOT_ORDER.map((pts,i) => ({
+  label: String(pts), pts, color: COLORS[pts],
+  start: i*SEG, end: (i+1)*SEG
+}));
 
 function card(html) { document.getElementById('card').innerHTML = html; }
 
@@ -98,24 +98,29 @@ function stateScreen(icon, title, sub) {
   </div>`);
 }
 
-function pickPrize() {
-  const totalW = PRIZES.reduce((s,p)=>s+p.weight,0);
-  let r = Math.random()*totalW;
-  for (let i=0;i<PRIZES.length;i++) { r -= PRIZES[i].weight; if (r<=0) return i; }
-  return PRIZES.length-1;
+function initials(name) {
+  const parts = (name||'?').trim().split(/\s+/);
+  return ((parts[0]?.[0]||'') + (parts[1]?.[0]||'')).toUpperCase();
 }
 
 function buildWheelGradient() {
-  let stops = [];
-  PRIZES.forEach((p,i)=> stops.push(`${p.color} ${i*SEG}deg ${(i+1)*SEG}deg`));
+  const stops = PRIZES.map(p => `${p.color} ${p.start}deg ${p.end}deg`);
   return `conic-gradient(${stops.join(',')})`;
 }
 
 function buildLabels() {
-  return PRIZES.map((p,i)=>{
-    const angle = i*SEG + SEG/2;
-    return `<div class="seg-label" style="transform:rotate(${angle}deg) translate(70px,-10px)">${p.label}</div>`;
+  return PRIZES.map(p=>{
+    const angle = (p.start + p.end) / 2;
+    // El div externo posiciona el gajo (mismo ángulo que el conic-gradient).
+    // El span interno gira 90° extra para que el número quede "a lo largo"
+    // (radial, de adentro hacia afuera) en vez de "a lo ancho".
+    return `<div class="seg-label" style="transform:rotate(${angle}deg) translate(-24px,-64px)"><span style="display:block;transform:rotate(90deg)">${p.label}</span></div>`;
   }).join('');
+}
+
+function prizeAtAngle(angleFromTop) {
+  const a = ((angleFromTop % 360) + 360) % 360;
+  return PRIZES.find(p => a >= p.start && a < p.end) || PRIZES[PRIZES.length-1];
 }
 
 // ══ Parse token from URL ══
@@ -154,26 +159,23 @@ async function init(payload) {
     return;
   }
 
-  renderWheelScreen(payload, token, spinsTotal, spinsUsed);
+  renderWheelScreen(payload, spinsTotal, spinsUsed);
 }
 
-function renderWheelScreen(payload, token, spinsTotal, spinsUsed) {
-  const dots = Array.from({length:spinsTotal}).map((_,i)=>{
-    const cls = i < spinsUsed ? 'done' : (i===spinsUsed ? 'current' : '');
-    return `<div class="dot ${cls}"></div>`;
-  }).join('');
-
+function renderWheelScreen(payload, spinsTotal, spinsUsed) {
+  const remaining = spinsTotal - spinsUsed;
   card(`
-    <div class="logo"><span class="cat">🐱</span> Neko Kafe Bang</div>
-    <div class="hello">¡Hola,</div>
-    <div class="client-name">${payload.name||'Cliente'}!</div>
-    <div class="progress">${dots}</div>
+    <div class="eyebrow">NEKO<b>RULETA</b> · TU PREMIO</div>
+    <div class="avatar">${initials(payload.name)}</div>
+    <div class="client-name">${payload.name||'Cliente'}</div>
+    <div class="points-line">Tienes <b>${(payload.pts||0).toLocaleString()}</b> puntos</div>
     <div class="wheel-wrap">
       <div class="pointer"></div>
       <div class="wheel" id="wheel" style="background:${buildWheelGradient()}">${buildLabels()}</div>
-      <div class="hub">🎰</div>
+      <div class="hub">⭐</div>
     </div>
-    <button class="btn btn-pink" id="spinBtn">🎰 Girar (${spinsUsed+1} de ${spinsTotal})</button>
+    <div class="spins-line" id="spinsLine">¡Tienes <b>${remaining}</b> giro${remaining>1?'s':''} disponible${remaining>1?'s':''}!</div>
+    <button class="btn" id="spinBtn">¡GIRAR AHORA!</button>
     <div class="result" id="result"></div>
     <div class="total-box" id="totalBox">
       <div class="total-num" id="totalNum">0</div>
@@ -219,13 +221,17 @@ async function doSpin(payload, spinsTotal) {
     return;
   }
 
-  const prizeIdx = pickPrize();
-  const prize = PRIZES[prizeIdx];
-  const segCenter = prizeIdx*SEG + SEG/2;
-  const landingAngle = (360 - segCenter) % 360;
+  // Elegimos primero el ángulo final del giro (lo que se ve), y de ahí
+  // derivamos qué premio corresponde exactamente a donde queda el puntero.
+  // Así el número que se ve SIEMPRE coincide con el premio otorgado.
   const baseline = currentRotation - (currentRotation % 360);
-  const finalRotation = baseline + 360*6 + landingAngle + (Math.random()*10-5);
+  const randomAngle = Math.random() * 360;
+  const finalRotation = baseline + 360*6 + randomAngle;
   currentRotation = finalRotation;
+
+  // Ángulo original (antes de rotar) que queda justo bajo el puntero (arriba, 0°)
+  const angleUnderPointer = (360 - (randomAngle % 360)) % 360;
+  const prize = prizeAtAngle(angleUnderPointer);
 
   const wheel = document.getElementById('wheel');
   wheel.style.transform = `rotate(${finalRotation}deg)`;
@@ -251,25 +257,21 @@ async function finishSpin(payload, prize, spinsTotal, newUsed) {
   resultEl.classList.add('show');
 
   spinning = false;
+  const remaining = spinsTotal - newUsed;
 
   if (newUsed >= spinsTotal) {
     await updateDoc(doc(db,'tokens', payload.t), { used: true });
     const finalSnap = await getDoc(doc(db,'tokens', payload.t));
     const totalWon = finalSnap.data().pointsWon || prize.pts;
     document.getElementById('spinBtn').remove();
+    document.getElementById('spinsLine').textContent = '¡Ya usaste todos tus giros!';
     const totalBox = document.getElementById('totalBox');
     totalBox.classList.add('show');
     document.getElementById('totalNum').textContent = totalWon;
-    document.querySelectorAll('.dot').forEach(d=>d.classList.add('done'));
   } else {
     const btn = document.getElementById('spinBtn');
     btn.disabled = false;
-    btn.textContent = `🎰 Girar (${newUsed+1} de ${spinsTotal})`;
-    document.querySelectorAll('.dot').forEach((d,i)=>{
-      d.classList.remove('current');
-      if (i < newUsed) d.classList.add('done');
-      if (i === newUsed) d.classList.add('current');
-    });
+    document.getElementById('spinsLine').innerHTML = `¡Tienes <b>${remaining}</b> giro${remaining>1?'s':''} disponible${remaining>1?'s':''}!`;
   }
 }
 </script>

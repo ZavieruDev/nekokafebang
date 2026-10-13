@@ -216,6 +216,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
 .empty-state .ei{font-size:40px;margin-bottom:12px}
 .divider{height:1px;background:var(--border);margin:20px 0}
+.neko-logo .logo-img{height:68px;width:auto;vertical-align:middle;margin-right:6px}
+.sidebar-logo .logo-img{height:38px;width:auto}
 </style>
 </head>
 <body>
@@ -223,7 +225,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-card">
-    <div class="neko-logo"><span class="cat">🐱</span> Neko Kafe Bang</div>
+    <div class="neko-logo"><img class="logo-img" src="icons/logo.png" alt=""> Neko Kafe Bang</div>
     <div class="login-sub">Panel de administración</div>
     <div class="login-field"><label>Usuario</label><input type="text" id="loginUser" placeholder="admin" autocomplete="off"></div>
     <div class="login-field"><label>Contraseña</label><input type="password" id="loginPass" placeholder="••••••••"></div>
@@ -235,7 +237,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <!-- APP -->
 <div id="app">
   <aside class="sidebar">
-    <div class="sidebar-logo"><span class="cat">🐱</span> Neko Kafe</div>
+    <div class="sidebar-logo"><img class="logo-img" src="icons/logo.png" alt=""> Neko Kafe</div>
     <nav class="sidebar-nav">
       <button class="nav-item active" onclick="showPage('pcs')" id="nav-pcs"><span class="icon">🖥️</span> PCs <span class="nav-badge" id="badge-pcs"></span></button>
       <button class="nav-item" onclick="showPage('loyalspin')" id="nav-loyalspin"><span class="icon">🎰</span> LoyalSpin</button>
