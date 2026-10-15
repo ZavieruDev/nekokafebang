@@ -561,6 +561,46 @@ window.showPage = function(name) {
 function initApp() {
   listenPCs();
   loadLSClientsCache();
+  listenNewMessagesGlobal();
+}
+
+/* ══ SONIDO DE NOTIFICACIÓN (sin archivos externos, generado con Web Audio) ══ */
+function playNotifSound() {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [0, 0.12].forEach((delay, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = i===0 ? 880 : 1175;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + delay + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + 0.22);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + 0.25);
+    });
+  } catch (e) { /* algunos navegadores bloquean audio sin interacción previa */ }
+}
+
+// Suena sin importar qué PC esté abierta en la pestaña de Chat — avisa
+// de CUALQUIER mensaje nuevo de un cliente en cualquier PC.
+let lastGlobalMsgId = null;
+let globalMsgFirstLoad = true;
+function listenNewMessagesGlobal() {
+  onSnapshot(
+    query(collection(db,'messages'), orderBy('ts','desc'), limit(1)),
+    snap => {
+      if (snap.empty) { globalMsgFirstLoad = false; return; }
+      const last = snap.docs[0];
+      const isNew = last.id !== lastGlobalMsgId;
+      lastGlobalMsgId = last.id;
+      if (isNew && !globalMsgFirstLoad && last.data().sender !== 'admin') {
+        playNotifSound();
+      }
+      globalMsgFirstLoad = false;
+    }
+  );
 }
 
 /* ══ PC MAP ══ */
@@ -817,6 +857,10 @@ window.startPCSession = async function() {
     });
     toast(`✅ Cliente ${name} creado`,'success');
   }
+
+  // Borra el chat de la sesión anterior en esta PC — el nuevo cliente
+  // empieza con el chat vacío, no con la conversación de quien pasó antes.
+  await clearChatForPC(pcId);
 
   const endTime = new Date(Date.now() + minutes*60*1000);
   await updateDoc(doc(db,'pcs',pcId), {
@@ -1279,6 +1323,11 @@ async function loadGanancias() {
 window.loadGanancias = loadGanancias;
 
 /* ══ CHAT ══ */
+async function clearChatForPC(pcId) {
+  const snap = await getDocs(query(collection(db,'messages'), where('pcId','==',pcId)));
+  await Promise.all(snap.docs.map(d => deleteDoc(doc(db,'messages',d.id))));
+}
+
 function initChat() {
   // List PCs
   const pcList = document.getElementById('chatPCList');

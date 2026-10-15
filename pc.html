@@ -316,6 +316,26 @@ async function updateTimer(pc) {
 }
 
 /* ══ CHAT ══ */
+function playNotifSound() {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [0, 0.12].forEach((delay, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = i===0 ? 880 : 1175;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + delay + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + 0.22);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + 0.25);
+    });
+  } catch (e) { /* algunos navegadores bloquean audio sin interacción previa */ }
+}
+
+let lastChatMsgId = null;
+let chatFirstLoad = true;
 function listenChat(pc) {
   onSnapshot(
     query(collection(db,'messages'), where('pcId','==',pcId), orderBy('ts','asc'), limit(50)),
@@ -323,6 +343,7 @@ function listenChat(pc) {
       const container = document.getElementById('chatMessages');
       if (snap.empty) {
         container.innerHTML = '<div class="chat-empty-msg">👋 ¡Hola! Escríbenos si necesitas algo.</div>';
+        chatFirstLoad = false;
         return;
       }
       container.innerHTML = snap.docs.map(d=>{
@@ -336,9 +357,17 @@ function listenChat(pc) {
       }).join('');
       container.scrollTop = container.scrollHeight;
 
-      // Notify new admin message
-      const last = snap.docs[snap.docs.length-1]?.data();
-      if (last?.sender==='admin') showNotif('💬 Nuevo mensaje del admin: '+last.text);
+      // Notify new admin message — solo si de verdad es un mensaje nuevo
+      // (no al cargar/recargar la página, que trae todo el historial de una vez).
+      const lastDoc = snap.docs[snap.docs.length-1];
+      const last = lastDoc.data();
+      const isNew = lastDoc.id !== lastChatMsgId;
+      lastChatMsgId = lastDoc.id;
+      if (isNew && !chatFirstLoad && last?.sender==='admin') {
+        showNotif('💬 Nuevo mensaje del admin: '+last.text);
+        playNotifSound();
+      }
+      chatFirstLoad = false;
     }
   );
 }
